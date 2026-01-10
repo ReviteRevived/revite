@@ -1,9 +1,8 @@
 import { Text } from "preact-i18n";
-
 import { ModalForm } from "@revoltchat/ui";
+import { useHistory, useLocation } from "react-router-dom";
 
 import { TextReact } from "../../../lib/i18n";
-
 import { ModalProps } from "../types";
 
 /**
@@ -13,6 +12,8 @@ export default function ConfirmLeave(
     props: ModalProps<"leave_group" | "leave_server">,
 ) {
     const name = props.target.name;
+    const history = useHistory();
+    const location = useLocation();
 
     return (
         <ModalForm
@@ -40,9 +41,13 @@ export default function ConfirmLeave(
             schema={{
                 silently_leave: "checkbox",
             }}
-            callback={({ silently_leave }) =>
-                props.target.delete(silently_leave)
-            }
+            callback={({ silently_leave }) => {
+                if (location.pathname.includes(props.target._id)) {
+                    history.push("/");
+                }
+
+                return props.target.delete(silently_leave);
+            }}
             submit={{
                 palette: "error",
                 children: <Text id="app.special.modals.actions.leave" />,
