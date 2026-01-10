@@ -178,7 +178,7 @@ export default observer(() => {
                                 </CategoryButton>
                             </Link>
                             <a
-                                href="https://github.com/NotAsraye/revite"
+                                href="https://github.com/ReviteRevived/revite"
                                 target="_blank"
                                 rel="noreferrer">
                                 <CategoryButton
