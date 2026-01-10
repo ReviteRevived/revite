@@ -117,9 +117,14 @@ export default observer(() => {
         for (const category of server.categories) {
             const channels = [];
             for (const id of category.channels) {
-                uncategorised.delete(id);
-                channels.push(addChannel(id));
+                const element = addChannel(id);
+                if (element) {
+                    uncategorised.delete(id);
+                    channels.push(element);
+                }
             }
+
+            if (channels.length === 0) continue;
 
             if (category.title === "Default") {
                 elements.push(...channels);
