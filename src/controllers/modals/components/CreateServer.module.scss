@@ -1,0 +1,27 @@
+.tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 2px solid var(--secondary-background);
+    padding-bottom: 0;
+
+    div {
+        padding: 8px 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--foreground);
+        opacity: 0.5;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            opacity: 0.8;
+        }
+
+        &[data-active="true"] {
+            opacity: 1;
+            border-bottom-color: var(--foreground);
+        }
+    }
+}
