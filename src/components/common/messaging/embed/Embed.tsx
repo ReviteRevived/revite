@@ -49,11 +49,19 @@ export default function Embed({ embed }: Props) {
         case "Website": {
             // Determine special embed size.
             let mw, mh;
+
+            // Check if this is a Tenor link specifically
+            const isTenor =
+                embed.type === "Website" &&
+                (embed.url?.startsWith("https://tenor.com") ||
+                    embed.original_url?.startsWith("https://tenor.com"));
+
             const largeMedia =
                 embed.type === "Text"
                     ? typeof embed.media !== "undefined"
                     : (embed.special && embed.special.type !== "None") ||
-                      embed.image?.size === "Large";
+                      embed.image?.size === "Large" ||
+                      isTenor;
 
             if (embed.type === "Text") {
                 mw = MAX_EMBED_WIDTH;
@@ -74,7 +82,14 @@ export default function Embed({ embed }: Props) {
                         break;
                     }
                     default: {
-                        if (embed.image?.size === "Preview") {
+                        if (isTenor) {
+                            mw =
+                                embed.video?.width ??
+                                embed.image?.width ??
+                                MAX_EMBED_WIDTH;
+                            mh =
+                                embed.video?.height ?? embed.image?.height ?? 0;
+                        } else if (embed.image?.size === "Preview") {
                             mw = MAX_EMBED_WIDTH;
                             mh = Math.min(
                                 embed.image.height ?? 0,
@@ -89,15 +104,19 @@ export default function Embed({ embed }: Props) {
             }
 
             const { width, height } = calculateSize(mw, mh);
-            if (embed.type === "Website" && embed.special?.type === "GIF") {
+
+            // Handle GIF rendering
+            if (
+                embed.type === "Website" &&
+                (embed.special?.type === "GIF" || isTenor)
+            ) {
+                const imgW = embed.image?.width ?? embed.video?.width ?? 1;
+                const imgH = embed.image?.height ?? embed.video?.height ?? 1;
+
                 return (
                     <EmbedMedia
                         embed={embed}
-                        width={
-                            height *
-                            ((embed.image?.width ?? 0) /
-                                (embed.image?.height ?? 0))
-                        }
+                        width={height * (imgW / imgH)}
                         height={height}
                     />
                 );
@@ -136,7 +155,6 @@ export default function Embed({ embed }: Props) {
                             </div>
                         )}
 
-                        {/*<span><a href={embed.url} target={"_blank"} className={styles.author}>Author</a></span>*/}
                         {embed.type === "Website" && embed.title && (
                             <span>
                                 <a
@@ -191,8 +209,6 @@ export default function Embed({ embed }: Props) {
                     className={classNames(styles.embed, styles.image)}
                     style={calculateSize(embed.width, embed.height)}
                     src={client.proxyFile(embed.url)}
-                    type="text/html"
-                    frameBorder="0"
                     loading="lazy"
                     onClick={() =>
                         modalController.push({ type: "image_viewer", embed })
@@ -210,7 +226,6 @@ export default function Embed({ embed }: Props) {
                     className={classNames(styles.embed, styles.image)}
                     style={calculateSize(embed.width, embed.height)}
                     src={client.proxyFile(embed.url)}
-                    frameBorder="0"
                     loading="lazy"
                     controls
                 />

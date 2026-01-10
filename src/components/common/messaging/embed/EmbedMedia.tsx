@@ -15,6 +15,10 @@ interface Props {
 export default function EmbedMedia({ embed, width, height }: Props) {
     if (embed.type !== "Website") return null;
     const client = useClient();
+    const isGifLike =
+        embed.special?.type === "GIF" ||
+        embed.url?.startsWith("https://tenor.com") ||
+        embed.original_url?.startsWith("https://tenor.com");
 
     switch (embed.special?.type) {
         case "YouTube": {
@@ -111,10 +115,11 @@ export default function EmbedMedia({ embed, width, height }: Props) {
                         className={styles.image}
                         style={{ width, height }}
                         src={client.proxyFile(url)}
-                        loop={embed.special?.type === "GIF"}
-                        controls={embed.special?.type !== "GIF"}
-                        autoPlay={embed.special?.type === "GIF"}
-                        muted={embed.special?.type === "GIF" ? true : undefined}
+                        loop={isGifLike}
+                        controls={!isGifLike}
+                        autoPlay={isGifLike}
+                        muted={isGifLike}
+                        playsInline={isGifLike}
                     />
                 );
             } else if (embed.image) {
