@@ -1,8 +1,9 @@
-# Deprecation Notice
+# Notice
 
-This project is deprecated, however it still may receive maintenance updates.
+This is an __UNOFFICIAL__ continuation of Stoat's [for-legacy-web](https://github.com/stoatchat/for-legacy-web) client. Please bare with me while I backport features and update everything to work 100% perfectly. 
 
-PRs for small fixes are more than welcome.
+The client itself is in a functional state. And, I am working on adding more of the "newer" features from the Stoat client into this legacy client. <3 
+(I'll update more of this readme later)
 
 ## Deploying a new release
 
