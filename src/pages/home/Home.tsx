@@ -23,8 +23,6 @@ import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
 
 import { useApplicationState } from "../../mobx/State";
 
-import wideSVG from "/assets/wide.svg";
-
 import { PageHeader } from "../../components/ui/Header";
 import { useClient } from "../../controllers/client/ClientController";
 import { modalController } from "../../controllers/modals/ModalController";
@@ -107,7 +105,17 @@ export default observer(() => {
                         <h3>
                             <Text id="app.special.modals.onboarding.welcome" />
                             <br />
-                            <img src={wideSVG} />
+                            Revite Revived
+                            <span
+                                style={{
+                                    display: "block",
+                                    opacity: 0.5,
+                                    fontSize: "0.4em",
+                                    fontWeight: "normal",
+                                    marginTop: "4px",
+                                }}>
+                                by Asraye & the community
+                            </span>
                         </h3>
                         <div className={styles.actions}>
                             <a
@@ -125,66 +133,38 @@ export default observer(() => {
                                     <Text id="app.home.group" />
                                 </CategoryButton>
                             </a>
-                            <Link to="/discover">
-                                <a>
-                                    <CategoryButton
-                                        action="chevron"
-                                        icon={<Compass size={32} />}
-                                        description={
-                                            <Text id="app.home.discover_desc" />
-                                        }>
-                                        <Text id="app.home.discover" />
-                                    </CategoryButton>
-                                </a>
-                            </Link>
 
                             {client.servers.get(
-                                "01F7ZSBSFHQ8TA81725KQCSDDP",
+                                "01KEFCEPJJGWRDE1Z8GZ7XYS7T",
                             ) ? (
-                                <Link to="/server/01F7ZSBSFHQ8TA81725KQCSDDP">
+                                <Link to="/server/01KEFCEPJJGWRDE1Z8GZ7XYS7T">
                                     <CategoryButton
                                         action="chevron"
                                         icon={<RightArrowCircle size={32} />}
-                                        description={
-                                            <Text id="app.home.goto-testers_desc" />
-                                        }>
-                                        <Text id="app.home.goto-testers" />
+                                        description="Jump back into the Revite Revived community.">
+                                        Go to Revite Revived
                                     </CategoryButton>
                                 </Link>
                             ) : (
-                                <Link to="/invite/Testers">
+                                <Link to="/invite/Am6TpQ1C">
                                     <CategoryButton
                                         action="chevron"
                                         icon={<Group size={32} />}
-                                        description={
-                                            <Text id="app.home.join-testers_desc" />
-                                        }>
-                                        <Text id="app.home.join-testers" />
+                                        description="Join the official Revite Revived community!">
+                                        Join Revite Revived
                                     </CategoryButton>
                                 </Link>
                             )}
 
-                            <Link to="/settings/feedback">
-                                <CategoryButton
-                                    action="chevron"
-                                    icon={<Megaphone size={32} />}
-                                    description={
-                                        <Text id="app.home.feedback_desc" />
-                                    }>
-                                    <Text id="app.home.feedback" />
-                                </CategoryButton>
-                            </Link>
                             <a
-                                href="https://wiki.revolt.chat/notes/project/financial-support/"
+                                href="https://asraye-shop.fourthwall.com"
                                 target="_blank"
                                 rel="noreferrer">
                                 <CategoryButton
                                     action="external"
-                                    description={
-                                        <Text id="app.home.donate_desc" />
-                                    }
+                                    description="Support on-going development and sustaining of the revival project of this beautiful client :3"
                                     icon={<Money size={32} />}>
-                                    <Text id="app.home.donate" />
+                                    Support Revite Revived
                                 </CategoryButton>
                             </a>
                             <Link to="/settings">
@@ -197,6 +177,17 @@ export default observer(() => {
                                     <Text id="app.home.settings" />
                                 </CategoryButton>
                             </Link>
+                            <a
+                                href="https://github.com/NotAsraye/revite"
+                                target="_blank"
+                                rel="noreferrer">
+                                <CategoryButton
+                                    action="external"
+                                    icon={<Cog size={32} />}
+                                    description="View the source code for Revite Revived on GitHub.">
+                                    Source Code
+                                </CategoryButton>
+                            </a>
                         </div>
                         {isDecember && (
                             <a href="#" onClick={toggleSeasonalTheme}>
