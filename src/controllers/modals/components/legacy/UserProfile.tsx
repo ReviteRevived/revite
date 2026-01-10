@@ -266,7 +266,8 @@ export const UserProfile = observer(
                             </Localizer>
                         )}
                     </div>
-                    {badges > 0 && (
+                    {(badges > 0 ||
+                        user._id === "01H72THN43HSSYMZY81249J6GP") && (
                         <div
                             style={{
                                 marginInline: "1em",
