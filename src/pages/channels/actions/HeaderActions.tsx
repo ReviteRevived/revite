@@ -6,6 +6,7 @@ import {
     PhoneCall,
     PhoneOff,
     Group,
+    Pin,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { useHistory } from "react-router-dom";
@@ -30,46 +31,6 @@ const Container = styled.div`
     gap: 16px;
 `;
 
-const SearchBar = styled.div`
-    display: flex;
-    align-items: center;
-    background: var(--primary-background);
-    border-radius: 4px;
-    position: relative;
-    width: 120px;
-    transition: width .25s ease;
-
-    :focus-within {
-        width: 200px;
-        box-shadow: 0 0 0 1pt var(--accent);
-    }
-
-    input {
-        all: unset;
-        font-size: 13px;
-        padding: 0 8px;
-        font-weight: 400;
-        height: 100%;
-        width: 100%;
-        }
-    }
-
-    .actions {
-        display: flex;
-        align-items: center;
-        position: absolute;
-        right: 0;
-        padding: 0 8px;
-        pointer-events: none;
-        background: inherit;
-
-        svg {
-            opacity: 0.4;
-            color: var(--foreground);
-        }
-    }
-`;
-
 export default function HeaderActions({ channel }: ChannelHeaderProps) {
     const layout = useApplicationState().layout;
     const history = useHistory();
@@ -83,7 +44,7 @@ export default function HeaderActions({ channel }: ChannelHeaderProps) {
         });
     }
 
-    function openSearch() {
+    function ensureSidebarVisible() {
         if (
             !isTouchscreenDevice &&
             !layout.getSectionState(SIDEBAR_MEMBERS, true)
@@ -92,7 +53,16 @@ export default function HeaderActions({ channel }: ChannelHeaderProps) {
         }
 
         slideOpen();
+    }
+
+    function openSearch() {
+        ensureSidebarVisible();
         chainedDefer(() => internalEmit("RightSidebar", "open", "search"));
+    }
+
+    function openPins() {
+        ensureSidebarVisible();
+        chainedDefer(() => internalEmit("RightSidebar", "open", "pins"));
     }
 
     function openMembers() {
@@ -140,19 +110,14 @@ export default function HeaderActions({ channel }: ChannelHeaderProps) {
                     </IconButton>
                 )}
                 {channel.channel_type !== "VoiceChannel" && (
-                    /*<SearchBar>
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            onClick={openSearch}
-                        />
-                        <div className="actions">
-                            <Search size={18} />
-                        </div>
-                    </SearchBar>*/
-                    <IconButton onClick={openSearch}>
-                        <Search size={25} />
-                    </IconButton>
+                    <>
+                        <IconButton onClick={openPins}>
+                            <Pin size={25} />
+                        </IconButton>
+                        <IconButton onClick={openSearch}>
+                            <Search size={25} />
+                        </IconButton>
+                    </>
                 )}
             </Container>
         </>
@@ -190,7 +155,7 @@ const VoiceActions = observer(
 
         return (
             <IconButton>
-                <PhoneCall size={24} /** ! FIXME: TEMP */ color="red" />
+                <PhoneCall size={24} color="red" />
             </IconButton>
         );
     },
