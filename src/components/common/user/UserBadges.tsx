@@ -156,6 +156,15 @@ export default function UserBadges({ badges, uid }: Props) {
                 ) : (
                     <></>
                 )}
+                {uid === "01H72THN43HSSYMZY81249J6GP" ? (
+                    <Tooltip content="Revite Revived Dev">
+                        <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
+                            👑
+                        </span>
+                    </Tooltip>
+                ) : (
+                    <></>
+                )}
             </Localizer>
         </BadgesBase>
     );
