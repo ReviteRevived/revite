@@ -36,7 +36,7 @@ export default observer(() => {
             home={state.layout.getLastHomePath}
             servers={state.ordering.orderedServers}
             reorder={state.ordering.reorderServer}
-            showDiscovery={IS_REVOLT}
+            showDiscovery={true}
         />
     );
 });

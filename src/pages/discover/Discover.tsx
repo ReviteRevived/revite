@@ -1,71 +1,35 @@
 import { Compass } from "@styled-icons/boxicons-solid";
-import { reaction } from "mobx";
-import { useHistory, useLocation } from "react-router-dom";
 import styled, { css } from "styled-components/macro";
-
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-
-import { Header, Preloader } from "@revoltchat/ui";
-
+import { Header } from "@revoltchat/ui";
 import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
-
-import { useApplicationState } from "../../mobx/State";
-
-import { Overrides } from "../../context/Theme";
-
-import { modalController } from "../../controllers/modals/ModalController";
 
 const Container = styled.div`
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-
-    ${() =>
-        isTouchscreenDevice
-            ? css`
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  position: fixed;
-
-                  padding-bottom: 50px;
-                  background: var(--background);
-              `
-            : css`
-                  background: var(--background);
-              `}
-`;
-
-const Frame = styled.iframe<{ loaded: boolean }>`
-    border: none;
-
-    ${() =>
-        !isTouchscreenDevice &&
-        css`
-            background: var(--secondary-background);
-            border-start-start-radius: 8px;
-            border-end-start-radius: 8px;
-        `}
+    background: var(--background);
 
     ${() =>
         isTouchscreenDevice &&
         css`
-            padding-top: 56px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            padding-bottom: 50px;
         `}
-
-    ${(props) =>
-        props.loaded
-            ? css`
-                  height: 100%;
-              `
-            : css`
-                  display: none;
-              `}
 `;
 
-const Loader = styled.div`
+const MessageWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     flex-grow: 1;
+    padding: 2rem;
+    text-align: center;
+    gap: 1.5rem;
 
     ${() =>
         !isTouchscreenDevice &&
@@ -76,90 +40,50 @@ const Loader = styled.div`
         `}
 `;
 
-const TRUSTED_HOSTS = [
-    "local.revolt.chat:3000",
-    "local.revolt.chat:3001",
-    "rvlt.gg",
-];
+const Text = styled.div`
+    font-size: 1.1rem;
+    color: var(--foreground);
+    line-height: 1.5;
+    max-width: 400px;
+`;
 
-const REMOTE = "https://rvlt.gg";
+const IconCircle = styled.div`
+    background: var(--primary);
+    color: white;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+`;
 
-export default function Discover() {
-    const state = useApplicationState();
+const ExternalLink = styled.a`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: filter 0.2s;
+    font-size: 0.95rem;
 
-    const history = useHistory();
-    const { pathname, search } = useLocation();
-
-    const path = useMemo(() => {
-        const query = new URLSearchParams(search);
-        query.set("embedded", "true");
-        return `${pathname}?${query.toString()}`;
-    }, []);
-
-    const [loaded, setLoaded] = useState(false);
-    const ref = useRef<HTMLIFrameElement>(null!);
-
-    function sendTheme(theme?: Overrides) {
-        ref.current?.contentWindow?.postMessage(
-            JSON.stringify({
-                source: "revolt",
-                type: "theme",
-                theme: theme ?? state.settings.theme.computeVariables(),
-            }),
-            "*",
-        );
+    &:hover {
+        filter: brightness(1.1);
+        text-decoration: none;
+        color: white;
     }
 
-    useEffect(
-        () =>
-            reaction(() => state.settings.theme.computeVariables(), sendTheme),
-        [],
-    );
+    &:active {
+        filter: brightness(0.9);
+    }
+`;
 
-    useEffect(() => state.layout.setLastDiscoverPath(path), []);
-
-    useEffect(() => {
-        function onMessage(message: MessageEvent) {
-            const url = new URL(message.origin);
-            if (!TRUSTED_HOSTS.includes(url.host)) return;
-
-            try {
-                const data = JSON.parse(message.data);
-                if (data.source === "discover") {
-                    switch (data.type) {
-                        case "init": {
-                            sendTheme();
-                            break;
-                        }
-                        case "path": {
-                            history.replace(data.path);
-                            state.layout.setLastDiscoverPath(data.path);
-                            break;
-                        }
-                        case "navigate": {
-                            modalController.openLink(data.url);
-                            break;
-                        }
-                        case "applyTheme": {
-                            state.settings.theme.hydrate({
-                                ...data.theme.variables,
-                                css: data.theme.css,
-                            });
-                            break;
-                        }
-                    }
-                }
-            } catch (err) {
-                if (import.meta.env.DEV) {
-                    console.error(err);
-                }
-            }
-        }
-
-        window.addEventListener("message", onMessage);
-        return () => window.removeEventListener("message", onMessage);
-    }, [ref]);
-
+export default function Discover() {
     return (
         <Container>
             {isTouchscreenDevice && (
@@ -168,18 +92,26 @@ export default function Discover() {
                     Discover
                 </Header>
             )}
-            {!loaded && (
-                <Loader>
-                    <Preloader type="ring" />
-                </Loader>
-            )}
-            <Frame
-                ref={ref}
-                loaded={loaded}
-                crossOrigin="anonymous"
-                onLoad={() => setLoaded(true)}
-                src={REMOTE + path}
-            />
+            <MessageWrapper>
+                <IconCircle>
+                    <Compass size={32} />
+                </IconCircle>
+                <Text>
+                    Sadly, Discovery is blocked on third party clients. I hope
+                    to make my own Discovery system soon, unless we get granted
+                    access.
+                    <br />
+                    <br />
+                    Thank you for understanding cutie :D
+                </Text>
+
+                <ExternalLink
+                    href="https://rvlt.gg"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    View Discovery @ rvlt.gg
+                </ExternalLink>
+            </MessageWrapper>
         </Container>
     );
 }
