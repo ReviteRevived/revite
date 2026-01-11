@@ -174,7 +174,7 @@ const Container = styled.div<{ largeEmoji: boolean }>`
     }
 
     // Set emoji size
-    --emoji-size: ${(props) => (props.largeEmoji ? "3em" : "1.25em")};
+    --emoji-size: ${(props) => (props.largeEmoji ? "6.7em" : "1.25em")};
 
     // Underline link hover
     a:hover {
