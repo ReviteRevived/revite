@@ -10,7 +10,7 @@ import { decodeTime } from "ulid";
 import { Text } from "preact-i18n";
 import { useEffect, useState } from "preact/hooks";
 
-import { MessageDivider, Preloader } from "@revoltchat/ui";
+import { MessageDivider } from "@revoltchat/ui";
 
 import { internalSubscribe, internalEmit } from "../../../lib/eventEmitter";
 import { ChannelRenderer } from "../../../lib/renderer/Singleton";
@@ -19,6 +19,7 @@ import { useApplicationState } from "../../../mobx/State";
 
 import Message from "../../../components/common/messaging/Message";
 import { SystemMessage } from "../../../components/common/messaging/SystemMessage";
+import { Skeleton } from "../../../components/ui/Skeleton";
 import { useClient } from "../../../controllers/client/ClientController";
 import RequiresOnline from "../../../controllers/client/jsx/RequiresOnline";
 import ConversationStart from "./ConversationStart";
@@ -40,6 +41,60 @@ const BlockedMessage = styled.div`
         background: var(--hover);
     }
 `;
+
+const ListSkeleton = ({ count = 1 }: { count?: number }) => (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+        {Array(count)
+            .fill(0)
+            .map((_, i) => (
+                <div
+                    key={i}
+                    style={{
+                        padding: "16px",
+                        display: "flex",
+                        gap: "12px",
+                    }}>
+                    <Skeleton.Item
+                        width="36px"
+                        height="36px"
+                        style={{
+                            borderRadius: "50%",
+                            flexShrink: 0,
+                            background: "var(--primary-header)",
+                            opacity: 0.1,
+                        }}
+                    />
+                    <div style={{ flex: 1 }}>
+                        <Skeleton.Item
+                            width="120px"
+                            height="10px"
+                            style={{
+                                marginBottom: "8px",
+                                borderRadius: "4px",
+                                background: "var(--primary-header)",
+                                opacity: 0.08,
+                            }}
+                        />
+                        <Skeleton.Item
+                            width={
+                                i % 3 === 0
+                                    ? "70%"
+                                    : i % 3 === 1
+                                    ? "40%"
+                                    : "55%"
+                            }
+                            height="14px"
+                            style={{
+                                borderRadius: "4px",
+                                background: "var(--primary-header)",
+                                opacity: 0.05,
+                            }}
+                        />
+                    </div>
+                </div>
+            ))}
+    </div>
+);
 
 export default observer(({ last_id, renderer, highlight }: Props) => {
     const client = useClient();
@@ -76,15 +131,17 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
         return () => subs.forEach((unsub) => unsub());
     }, [renderer.messages, renderer.state, userId]);
 
-    const render: Children[] = [];
+    const render: any[] = [];
     let previous: MessageI | undefined;
 
     if (renderer.atTop) {
-        render.push(<ConversationStart channel={renderer.channel} />);
+        render.push(
+            <ConversationStart channel={renderer.channel} key="start" />,
+        );
     } else {
         render.push(
-            <RequiresOnline>
-                <Preloader type="ring" />
+            <RequiresOnline key="top-loader">
+                <ListSkeleton count={20} />
             </RequiresOnline>,
         );
     }
@@ -95,18 +152,18 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
         current: string,
         curAuthor: string,
         currentMasq: Nullable<API.Masquerade>,
-        previous: string,
+        previousId: string,
         prevAuthor: string,
         previousMasq: Nullable<API.Masquerade>,
     ) {
         head = false;
         const atime = decodeTime(current),
             adate = new Date(atime),
-            btime = decodeTime(previous),
+            btime = decodeTime(previousId),
             bdate = new Date(btime);
 
         let unread = false;
-        if (!divided && last_id && previous >= last_id) {
+        if (!divided && last_id && previousId >= last_id) {
             unread = true;
             divided = true;
         }
@@ -123,6 +180,7 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
         if (unread || date) {
             render.push(
                 <MessageDivider
+                    key={`divider-${current}`}
                     date={date ? dayjs(date).format("LL") : undefined}
                     unread={unread}
                 />,
@@ -140,7 +198,7 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
     let blocked = 0;
     function pushBlocked() {
         render.push(
-            <BlockedMessage>
+            <BlockedMessage key={`blocked-${render.length}`}>
                 <X size={16} />{" "}
                 <Text
                     id="app.main.channel.misc.blocked_messages"
@@ -215,11 +273,6 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
                     previous.author_id,
                     previous.masquerade,
                 );
-
-                previous = {
-                    _id: msg.id,
-                    author_id: userId!,
-                } as MessageI;
             }
 
             render.push(
@@ -227,7 +280,8 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
                     message={
                         new MessageI(client, {
                             ...msg.data,
-                            replies: msg.data.replies.map((x) => x.id),
+                            replies:
+                                msg.data.replies?.map((x: any) => x.id) ?? [],
                         })
                     }
                     key={msg.id}
@@ -236,11 +290,16 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
                     attachContext
                 />,
             );
+
+            previous = {
+                _id: msg.id,
+                author_id: userId!,
+            } as MessageI;
         }
     } else {
         render.push(
-            <RequiresOnline>
-                <Preloader type="ring" />
+            <RequiresOnline key="bottom-skeleton">
+                <ListSkeleton count={1} />
             </RequiresOnline>,
         );
     }
