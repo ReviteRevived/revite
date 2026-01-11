@@ -42,7 +42,7 @@ const BlockedMessage = styled.div`
     }
 `;
 
-const ListSkeleton = ({ count = 1 }: { count?: number }) => (
+export const ListSkeleton = ({ count = 1 }: { count?: number }) => (
     <div style={{ display: "flex", flexDirection: "column" }}>
         {Array(count)
             .fill(0)
