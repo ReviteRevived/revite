@@ -272,7 +272,7 @@ export default observer(() => {
                         <Text id="app.special.modals.changelogs.title" />
                     </ButtonItem>
                     <a
-                        href="https://github.com/revoltchat"
+                        href="github.com/ReviteRevived/revite/"
                         target="_blank"
                         rel="noreferrer">
                         <ButtonItem compact>
@@ -281,7 +281,7 @@ export default observer(() => {
                         </ButtonItem>
                     </a>
                     <a
-                        href="https://wiki.revolt.chat/notes/project/financial-support/"
+                        href="https://asraye-shop.fourthwall.com"
                         target="_blank"
                         rel="noreferrer">
                         <ButtonItem className={styles.donate} compact>
