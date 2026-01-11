@@ -9,14 +9,11 @@ import useResizeObserver from "use-resize-observer";
 import { createContext } from "preact";
 import {
     useCallback,
-    useContext,
     useEffect,
     useLayoutEffect,
     useRef,
     useState,
 } from "preact/hooks";
-
-import { Preloader } from "@revoltchat/ui";
 
 import { defer } from "../../../lib/defer";
 import { internalEmit, internalSubscribe } from "../../../lib/eventEmitter";
@@ -28,6 +25,7 @@ import RequiresOnline from "../../../controllers/client/jsx/RequiresOnline";
 import { modalController } from "../../../controllers/modals/ModalController";
 import ConversationStart from "./ConversationStart";
 import MessageRenderer from "./MessageRenderer";
+import { ListSkeleton } from "./MessageRenderer";
 
 const Area = styled.div.attrs({ "data-scroll-offset": "with-padding" })`
     height: 100%;
@@ -70,10 +68,8 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
     // ? This is the scroll container.
     const ref = useRef<HTMLDivElement>(null);
     const { width, height } = useResizeObserver<HTMLDivElement>({ ref });
-
     // ? Current channel state.
     const renderer = getRenderer(channel);
-
     // ? useRef to avoid re-renders
     const scrollState = useRef<ScrollState>({ type: "Free" });
 
@@ -161,7 +157,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
             setScrollState({ type: "ScrollToBottom" }),
         );
     }, [setScrollState]);
-
     // ? Handle events from renderer.
     useLayoutEffect(
         () => setScrollState(renderer.scrollState),
@@ -203,7 +198,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
                 history.push(`/channel/${channel._id}`);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [message]);
 
     // ? If we are waiting for network, try again.
@@ -215,7 +209,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
                 } else {
                     renderer.reloadStale();
                 }
-
                 break;
             case "Offline":
             case "Disconnected":
@@ -224,7 +217,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
                 break;
         }
     }, [renderer, session.state]);
-
     // ? When the container is scrolled.
     // ? Also handle StayAtBottom
     useEffect(() => {
@@ -247,7 +239,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
         current.addEventListener("scroll", onScroll);
         return () => current.removeEventListener("scroll", onScroll);
     }, [ref, scrollState, setScrollState]);
-
     // ? Top and bottom loaders.
     useEffect(() => {
         const current = ref.current;
@@ -274,7 +265,6 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
         current.addEventListener("scroll", onScroll);
         return () => current.removeEventListener("scroll", onScroll);
     }, [ref, renderer]);
-
     // ? Scroll down whenever the message area resizes.
     const stbOnResize = useCallback(() => {
         if (!atBottom() && scrollState.current.type === "Bottom") {
@@ -286,18 +276,15 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
             setScrollState({ type: "Bottom" });
         }
     }, [setScrollState]);
-
     // ? Scroll down when container resized.
     useLayoutEffect(() => {
         stbOnResize();
     }, [stbOnResize, height]);
-
     // ? Scroll down whenever the window resizes.
     useLayoutEffect(() => {
         document.addEventListener("resize", stbOnResize);
         return () => document.removeEventListener("resize", stbOnResize);
     }, [ref, scrollState, stbOnResize]);
-
     // ? Scroll to bottom when pressing 'Escape'.
     useEffect(() => {
         function keyUp(e: KeyboardEvent) {
@@ -316,12 +303,13 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
             value={(width ?? 0) - MESSAGE_AREA_PADDING}>
             <Area ref={ref}>
                 <div>
-                    {renderer.state === "LOADING" && <Preloader type="ring" />}
-                    {renderer.state === "WAITING_FOR_NETWORK" && (
-                        <RequiresOnline>
-                            <Preloader type="ring" />
+                    {(renderer.state === "LOADING" ||
+                        renderer.state === "WAITING_FOR_NETWORK") && (
+                        <RequiresOnline fallback={<ListSkeleton count={10} />}>
+                            <ListSkeleton count={15} />
                         </RequiresOnline>
                     )}
+
                     {renderer.state === "RENDER" && (
                         <MessageRenderer
                             last_id={last_id}
@@ -329,6 +317,7 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
                             highlight={highlight}
                         />
                     )}
+
                     {renderer.state === "EMPTY" && (
                         <ConversationStart channel={channel} />
                     )}
