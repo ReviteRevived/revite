@@ -49,6 +49,14 @@ const Area = styled.div.attrs({ "data-scroll-offset": "with-padding" })`
     }
 `;
 
+const SkeletonWrapper = styled.div`
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+`;
+
 interface Props {
     last_id?: string;
     channel: Channel;
@@ -305,9 +313,12 @@ export const MessageArea = observer(({ last_id, channel }: Props) => {
                 <div>
                     {(renderer.state === "LOADING" ||
                         renderer.state === "WAITING_FOR_NETWORK") && (
-                        <RequiresOnline fallback={<ListSkeleton count={10} />}>
-                            <ListSkeleton count={15} />
-                        </RequiresOnline>
+                        <SkeletonWrapper>
+                            <RequiresOnline
+                                fallback={<ListSkeleton count={10} />}>
+                                <ListSkeleton count={20} />
+                            </RequiresOnline>
+                        </SkeletonWrapper>
                     )}
 
                     {renderer.state === "RENDER" && (
