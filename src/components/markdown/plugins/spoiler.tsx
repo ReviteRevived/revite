@@ -1,7 +1,5 @@
 import styled, { css } from "styled-components";
-
 import { useState } from "preact/hooks";
-
 import { createComponent, CustomComponentProps } from "./remarkRegexComponent";
 
 const Spoiler = styled.span<{ shown: boolean }>`
@@ -42,4 +40,7 @@ export function RenderSpoiler({ match }: CustomComponentProps) {
     );
 }
 
-export const remarkSpoiler = createComponent("spoiler", /!!([^!]+)!!/g);
+export const remarkSpoiler = createComponent(
+    "spoiler",
+    /(?:!!|\|\|)(.*?)(?:!!|\|\|)/g,
+);
