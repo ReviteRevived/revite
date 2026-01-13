@@ -5,11 +5,11 @@ import { useState, useEffect, useMemo } from "react";
 import {
     Compass,
     Palette,
-    Trash,
     Server,
     Bot,
     Search,
     CheckShield,
+    Exit,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { useApplicationState } from "../../mobx/State";
@@ -224,6 +224,13 @@ export default observer(function Discover() {
 
             <div className={styles.mainContent}>
                 <div className={styles.heroSection}>
+                    <button
+                        className={styles.closeButton}
+                        onClick={() => {
+                            window.history.back();
+                        }}>
+                        <Exit size={24} />
+                    </button>
                     <div className={styles.iconCircle}>
                         <Compass size={32} color="white" />
                     </div>
@@ -252,14 +259,6 @@ export default observer(function Discover() {
                             }
                         />
                     </div>
-                    <button
-                        className={styles.resetButton}
-                        onClick={() => {
-                            themeStore.reset();
-                            (themeStore as any).setCustomCSS?.(""); // Probably a better way to do this.
-                        }}>
-                        <Trash size={14} /> Reset
-                    </button>
                 </div>
 
                 {loading ? (
