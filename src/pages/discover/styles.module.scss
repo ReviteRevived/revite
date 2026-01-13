@@ -79,8 +79,34 @@
     }
 }
 
+.closeButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s;
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (min-width: 768px) {
+        display: none;
+    }
+}
+
 .heroSection {
     display: flex;
+    position: relative;
     align-items: center;
     padding: 2.5rem;
     margin-bottom: 1.5rem;
