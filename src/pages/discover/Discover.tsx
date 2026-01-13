@@ -1,117 +1,299 @@
-import { Compass } from "@styled-icons/boxicons-solid";
-import styled, { css } from "styled-components/macro";
-import { Header } from "@revoltchat/ui";
+// This code, sucks. — It is also temporary just to add themes for now :)
+// If you want to improve it, feel free. I know I made many mistales
+// I'm superrrr sleep deprived tbh.
+import { useState, useEffect, useMemo } from "react";
+import {
+    Compass,
+    Palette,
+    Trash,
+    Server,
+    Bot,
+    Search,
+    CheckShield,
+} from "@styled-icons/boxicons-solid";
+import { observer } from "mobx-react-lite";
+import { useApplicationState } from "../../mobx/State";
 import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
+import styles from "./styles.module.scss";
 
-const Container = styled.div`
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    background: var(--background);
+// Skeletons so things r pretty
+const ThemeSkeleton = () => (
+    <div className={`${styles.themeCard} ${styles.skeleton}`}>
+        <div className={styles.previewContainer} />
+        <div className={styles.cardContent}>
+            <div
+                className={styles.skeletonText}
+                style={{ width: "70%", height: "1.2rem" }}
+            />
+            <div
+                className={styles.skeletonText}
+                style={{ width: "40%", height: "0.8rem", marginTop: "8px" }}
+            />
+        </div>
+    </div>
+);
 
-    ${() =>
-        isTouchscreenDevice &&
-        css`
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            padding-bottom: 50px;
-        `}
-`;
+export default observer(function Discover() {
+    const themeStore = useApplicationState().settings.theme;
+    const [themes, setThemes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
 
-const MessageWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    padding: 2rem;
-    text-align: center;
-    gap: 1.5rem;
+    useEffect(() => {
+        fetch(
+            "https://raw.githubusercontent.com/revoltchat/themes/refs/heads/built/all.json",
+        )
+            .then((res) => res.json())
+            .then((data) => {
+                const list = Object.entries(data).map(([slug, d]: any) => ({
+                    slug,
+                    ...d,
+                }));
+                setThemes(list);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
 
-    ${() =>
-        !isTouchscreenDevice &&
-        css`
-            background: var(--secondary-background);
-            border-start-start-radius: 8px;
-            border-end-start-radius: 8px;
-        `}
-`;
+    const groupedThemes = useMemo(() => {
+        const filtered = themes.filter(
+            (t) =>
+                t.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                t.creator?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                t.tags?.some((tag: string) =>
+                    tag.toLowerCase().includes(searchQuery.toLowerCase()),
+                ),
+        );
 
-const Text = styled.div`
-    font-size: 1.1rem;
-    color: var(--foreground);
-    line-height: 1.5;
-    max-width: 400px;
-`;
+        return {
+            official: filtered.filter(
+                (t) => t.creator?.toLowerCase() === "revolt",
+            ),
+            community: filtered.filter(
+                (t) => t.creator?.toLowerCase() !== "revolt",
+            ),
+        };
+    }, [themes, searchQuery]);
 
-const IconCircle = styled.div`
-    background: var(--primary);
-    color: white;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.9;
-`;
+    // This below is the spawn of satan 👇
+    const handleApply = (t: any) => {
+        const source = t.variables || t;
 
-const ExternalLink = styled.a`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary);
-    color: white;
-    padding: 10px 24px;
-    border-radius: 4px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: filter 0.2s;
-    font-size: 0.95rem;
+        const isLight = source.light === true || t.tags?.includes("light");
+        themeStore.setBase(isLight ? "light" : "dark");
 
-    &:hover {
-        filter: brightness(1.1);
-        text-decoration: none;
-        color: white;
-    }
+        const metadata = [
+            "name",
+            "creator",
+            "description",
+            "slug",
+            "tags",
+            "light",
+            "version",
+            "css",
+        ];
+        const themePayload: any = {};
 
-    &:active {
-        filter: brightness(0.9);
-    }
-`;
+        const flatten = (obj: any, prefix = "") => {
+            Object.keys(obj).forEach((key) => {
+                const value = obj[key];
+                const newKey = prefix ? `${prefix}-${key}` : key;
+                if (
+                    value &&
+                    typeof value === "object" &&
+                    !Array.isArray(value)
+                ) {
+                    flatten(value, newKey);
+                } else if (!metadata.includes(newKey)) {
+                    themePayload[newKey] = value;
+                }
+            });
+        };
 
-export default function Discover() {
+        flatten(source);
+
+        // "Meet Thickman, a retired assassin... ensuring he stays sufficiently hydrated at all times". - Modest Pelican
+        themeStore.hydrate(themePayload, true);
+
+        if (t.css) {
+            (themeStore as any).setCustomCSS?.(t.css) ||
+                (themeStore as any).setCSS?.(t.css);
+        } else {
+            // Idrk what this does when I wrote it, but I know if I remove it, everything breaks.
+            (themeStore as any).setCustomCSS?.("") ||
+                (themeStore as any).setCSS?.("");
+        }
+    };
+
+    // TODO: Fix theme card, this looks SO BADDD...
+    const renderThemeCard = (t: any) => {
+        const vars = t.variables || t;
+        const isOfficial = t.creator?.toLowerCase() === "revolt";
+        const displayTags = (t.tags || [])
+            .filter((tag: string) => tag.toLowerCase() !== "theme")
+            .slice(0, 3);
+
+        return (
+            <div className={styles.themeCard} key={t.slug}>
+                <div
+                    className={styles.previewContainer}
+                    style={{
+                        background:
+                            vars["primary-background"] ||
+                            vars["background"] ||
+                            "#111",
+                    }}>
+                    <div
+                        className={styles.mockSidebar}
+                        style={{
+                            background:
+                                vars["secondary-background"] ||
+                                "rgba(0,0,0,0.2)",
+                        }}
+                    />
+                    <div className={styles.mockContent}>
+                        <div
+                            className={styles.mockLine}
+                            style={{
+                                width: "40%",
+                                background: vars["accent"] || "#fd6671",
+                            }}
+                        />
+                        <div
+                            className={styles.mockLine}
+                            style={{
+                                width: "70%",
+                                opacity: 0.1,
+                                background: vars["foreground"] || "#fff",
+                            }}
+                        />
+                    </div>
+                    {t.version && (
+                        <div className={styles.versionBadge}>v{t.version}</div>
+                    )}
+                </div>
+                <div className={styles.cardContent}>
+                    <div className={styles.themeInfo}>
+                        <h3>
+                            {t.name}{" "}
+                            {isOfficial && (
+                                <CheckShield
+                                    size={16}
+                                    style={{
+                                        color: "var(--accent)",
+                                        marginLeft: 4,
+                                    }}
+                                />
+                            )}
+                        </h3>
+                        <p>by: {t.creator}</p>
+                        <div className={styles.tagList}>
+                            {displayTags.map((tag: string) => (
+                                <span key={tag} className={styles.tag}>
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                    <button
+                        className={styles.applyButton}
+                        onClick={() => handleApply(t)}>
+                        Apply
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     return (
-        <Container>
-            {isTouchscreenDevice && (
-                <Header palette="primary" withTransparency>
-                    <Compass size={27} />
-                    Discover
-                </Header>
-            )}
-            <MessageWrapper>
-                <IconCircle>
-                    <Compass size={32} />
-                </IconCircle>
-                <Text>
-                    Sadly, Discovery is blocked on third party clients. I hope
-                    to make my own Discovery system soon, unless we get granted
-                    access.
-                    <br />
-                    <br />
-                    Thank you for understanding cutie :D
-                </Text>
+        <div
+            className={`${styles.discoverLayout} ${
+                isTouchscreenDevice ? styles.touchscreen : "" // Everyone should use a PC, so I don't have to worry about this.
+            }`}>
+            <div className={styles.sideNav}>
+                <div className={styles.navItem} data-active="true">
+                    <Palette size={20} /> Themes
+                </div>
+                <div className={`${styles.navItem} ${styles.disabled}`}>
+                    <Server size={20} /> Servers {/* For the teasing :trol: */}
+                </div>
+                <div className={`${styles.navItem} ${styles.disabled}`}>
+                    <Bot size={20} /> Bots {/* For the teasing :trol: */}
+                </div>
+            </div>
 
-                <ExternalLink
-                    href="https://rvlt.gg"
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    View Discovery @ rvlt.gg
-                </ExternalLink>
-            </MessageWrapper>
-        </Container>
+            <div className={styles.mainContent}>
+                <div className={styles.heroSection}>
+                    <div className={styles.iconCircle}>
+                        <Compass size={32} color="white" />
+                    </div>
+                    <div className={styles.heroText}>
+                        <div className={styles.heroTitle}>
+                            Community Discovery
+                        </div>
+                        {/* They should give me access frfr */}
+                        <div className={styles.heroSubtitle}>
+                            Building this in my free-time since official
+                            discovery is currently blocked on third-party
+                            clients.
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.toolbar}>
+                    <div className={styles.searchWrapper}>
+                        <Search size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search themes or #tags..."
+                            value={searchQuery}
+                            onChange={(e) =>
+                                setSearchQuery(e.currentTarget.value)
+                            }
+                        />
+                    </div>
+                    <button
+                        className={styles.resetButton}
+                        onClick={() => {
+                            themeStore.reset();
+                            (themeStore as any).setCustomCSS?.(""); // Probably a better way to do this.
+                        }}>
+                        <Trash size={14} /> Reset
+                    </button>
+                </div>
+
+                {loading ? (
+                    <div className={styles.themeGrid}>
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <ThemeSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : (
+                    <>
+                        {/* This likes to whine about children.. Idk, I think they lost custody? */}
+                        {groupedThemes.official.length > 0 && (
+                            <section className={styles.sectionWrapper}>
+                                <h2 className={styles.sectionTitle}>
+                                    Official Themes {/* Stinky themes */}
+                                </h2>
+                                <div className={styles.themeGrid}>
+                                    {groupedThemes.official.map(
+                                        renderThemeCard,
+                                    )}
+                                </div>
+                            </section>
+                        )}
+                        <section className={styles.sectionWrapper}>
+                            <h2 className={styles.sectionTitle}>
+                                Community Themes {/* Peak themes */}
+                            </h2>
+                            <div className={styles.themeGrid}>
+                                {groupedThemes.community.map(renderThemeCard)}
+                            </div>
+                        </section>
+                    </>
+                )}
+            </div>
+        </div>
     );
-}
+});
