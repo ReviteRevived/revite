@@ -1,5 +1,5 @@
 import { At } from "@styled-icons/boxicons-regular";
-import { File, XCircle } from "@styled-icons/boxicons-solid";
+import { File, XCircle, Trash, BellOff } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { Channel, Message } from "revolt.js";
 import styled from "styled-components/macro";
@@ -26,6 +26,46 @@ interface Props {
     replies: Reply[];
     setReplies: StateUpdater<Reply[]>;
 }
+
+const GlobalActions = styled.div`
+    display: flex;
+    padding: 6px 20px;
+    background: var(--primary-header-background);
+    border-bottom: 1px solid var(--border);
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--secondary-foreground);
+
+    .label {
+        opacity: 0.6;
+        letter-spacing: 0.5px;
+    }
+
+    .group {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .btn {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.15s ease;
+
+        &:hover {
+            color: var(--accent);
+        }
+
+        &.clear:hover {
+            color: var(--error);
+        }
+    }
+`;
 
 const Base = styled.div`
     @keyframes bottomBounce {
@@ -93,12 +133,6 @@ const Base = styled.div`
         gap: 12px;
         display: flex;
     }
-
-    /*@media (pointer: coarse) { //FIXME: Make action buttons bigger on pointer coarse
-        .actions > svg {
-            height: 25px;
-        }
-    }*/
 `;
 
 // ! FIXME: Move to global config
@@ -106,6 +140,14 @@ const MAX_REPLIES = 5;
 export default observer(({ channel, replies, setReplies }: Props) => {
     const client = channel.client;
     const layout = useApplicationState().layout;
+
+    const allPinging = replies.length > 0 && replies.every((r) => r.mention);
+
+    const toggleBulkMentions = () => {
+        const newState = !allPinging;
+        setReplies(replies.map((r) => ({ ...r, mention: newState })));
+        layout.setSectionState(SECTION_MENTION, newState, false);
+    };
 
     // Event listener for adding new messages to reply bar.
     useEffect(() => {
@@ -128,7 +170,7 @@ export default observer(({ channel, replies, setReplies }: Props) => {
                 },
             ]);
         });
-    }, [replies, setReplies, client.user]);
+    }, [replies, setReplies, client.user, layout]);
 
     // Map all the replies to messages we are aware of.
     const messages = replies.map((x) => client.messages.get(x.id));
@@ -145,6 +187,33 @@ export default observer(({ channel, replies, setReplies }: Props) => {
 
     return (
         <div>
+            {replies.length > 1 && (
+                <GlobalActions>
+                    <div className="group">
+                        <span className="label">
+                            <Text id="app.main.channel.reply.bulk_actions" />
+                        </span>
+                        <div className="btn" onClick={toggleBulkMentions}>
+                            {allPinging ? (
+                                <>
+                                    <BellOff size={14} />
+                                    <Text id="app.main.channel.reply.silence_all" />
+                                </>
+                            ) : (
+                                <>
+                                    <At size={14} />
+                                    <Text id="app.main.channel.reply.mention_all" />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    <div className="btn clear" onClick={() => setReplies([])}>
+                        <Trash size={14} />
+                        <Text id="app.main.channel.reply.clear_all" />
+                    </div>
+                </GlobalActions>
+            )}
+
             {replies.map((reply, index) => {
                 const message = messages[index];
                 if (!message) return null;
@@ -212,7 +281,6 @@ export default observer(({ channel, replies, setReplies }: Props) => {
                                                         mention: !_.mention,
                                                     };
                                                 }
-
                                                 return _;
                                             }),
                                         );
@@ -227,7 +295,13 @@ export default observer(({ channel, replies, setReplies }: Props) => {
                                         content={
                                             <Text id="app.main.channel.reply.toggle" />
                                         }>
-                                        <span className="toggle">
+                                        <span
+                                            className="toggle"
+                                            style={{
+                                                color: reply.mention
+                                                    ? "var(--accent)"
+                                                    : "inherit",
+                                            }}>
                                             <At size={15} />
                                             <Text
                                                 id={
