@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     InfoCircle,
     UserPlus,
@@ -10,9 +11,11 @@ import {
     Edit,
     MessageSquareEdit,
     Key,
+    Pin,
+    XCircle,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
-import { Message, API } from "revolt.js";
+import { Message, API, User } from "revolt.js";
 import styled from "styled-components/macro";
 import { decodeTime } from "ulid";
 
@@ -22,10 +25,9 @@ import { Text } from "preact-i18n";
 import { Row } from "@revoltchat/ui";
 
 import { TextReact } from "../../../lib/i18n";
-
 import { useApplicationState } from "../../../mobx/State";
-
 import { dayjs } from "../../../context/Locale";
+import { useClient } from "../../../controllers/client/ClientController";
 
 import Markdown from "../../markdown/Markdown";
 import Tooltip from "../Tooltip";
@@ -80,14 +82,23 @@ const iconDictionary = {
     channel_icon_changed: MessageSquareEdit,
     channel_ownership_changed: Key,
     text: InfoCircle,
+    message_pinned: Pin,
+    message_unpinned: XCircle,
 };
 
 export const SystemMessage = observer(
     ({ attachContext, message, highlight, hideInfo }: Props) => {
-        const data = message.asSystemMessage;
+        const data = message.system;
         if (!data) return null;
 
+        const client = useClient();
         const settings = useApplicationState().settings;
+
+        const resolveUser = (u: any): User | undefined => {
+            const id = typeof u === "string" ? u : u?._id;
+            if (!id || id === "00000000000000000000000000") return undefined;
+            return client.users.get(id);
+        };
 
         const SystemMessageIcon =
             iconDictionary[data.type as API.SystemMessage["type"]] ??
@@ -105,26 +116,42 @@ export const SystemMessage = observer(
                                 : "removed_by"
                         }`}
                         fields={{
-                            user: <UserShort user={data.user} />,
-                            other_user: <UserShort user={data.by} />,
+                            user: (
+                                <UserShort
+                                    user={resolveUser(
+                                        (data as any).id || (data as any).user,
+                                    )}
+                                />
+                            ),
+                            other_user: (
+                                <UserShort
+                                    user={resolveUser((data as any).by)}
+                                />
+                            ),
                         }}
                     />
                 );
                 break;
+
             case "user_joined":
             case "user_left":
             case "user_kicked":
             case "user_banned": {
-                const createdAt = data.user ? decodeTime(data.user._id) : null;
+                const targetUser = resolveUser(
+                    (data as any).id || (data as any).user,
+                );
+                const createdAt = targetUser
+                    ? decodeTime(targetUser._id)
+                    : null;
                 children = (
                     <Row centred>
                         <TextReact
                             id={`app.main.channel.system.${data.type}`}
                             fields={{
-                                user: <UserShort user={data.user} />,
+                                user: <UserShort user={targetUser} />,
                             }}
                         />
-                        {data.type == "user_joined" &&
+                        {data.type === "user_joined" &&
                             createdAt &&
                             (settings.get("appearance:show_account_age") ||
                                 Date.now() - createdAt <
@@ -147,43 +174,74 @@ export const SystemMessage = observer(
                 );
                 break;
             }
+
             case "channel_renamed":
                 children = (
                     <TextReact
                         id={`app.main.channel.system.channel_renamed`}
                         fields={{
-                            user: <UserShort user={data.by} />,
-                            name: <b>{data.name}</b>,
+                            user: (
+                                <UserShort
+                                    user={resolveUser((data as any).by)}
+                                />
+                            ),
+                            name: <b>{(data as any).name}</b>,
                         }}
                     />
                 );
                 break;
+
             case "channel_description_changed":
             case "channel_icon_changed":
                 children = (
                     <TextReact
                         id={`app.main.channel.system.${data.type}`}
                         fields={{
-                            user: <UserShort user={data.by} />,
+                            user: (
+                                <UserShort
+                                    user={resolveUser((data as any).by)}
+                                />
+                            ),
                         }}
                     />
                 );
                 break;
+
             case "channel_ownership_changed":
                 children = (
                     <TextReact
                         id={`app.main.channel.system.channel_ownership_changed`}
                         fields={{
-                            from: <UserShort user={data.from} />,
-                            to: <UserShort user={data.to} />,
+                            from: (
+                                <UserShort
+                                    user={resolveUser((data as any).from)}
+                                />
+                            ),
+                            to: (
+                                <UserShort
+                                    user={resolveUser((data as any).to)}
+                                />
+                            ),
                         }}
                     />
                 );
                 break;
+
             case "text":
-                if (message.system?.type === "text") {
-                    children = <Markdown content={message.system?.content} />;
-                }
+                children = <Markdown content={(data as any).content} />;
+                break;
+
+            // These whine, but we ignore it. Cause It works
+            case "message_pinned":
+            case "message_unpinned":
+                children = (
+                    <>
+                        <UserShort user={resolveUser((data as any).by)} />
+                        {data.type === "message_pinned"
+                            ? " pinned a message"
+                            : " unpinned a message"}
+                    </>
+                );
                 break;
         }
 
