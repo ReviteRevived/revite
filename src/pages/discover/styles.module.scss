@@ -3,7 +3,6 @@
     height: 100%;
     background: var(--background);
     color: var(--foreground);
-
     &.touchscreen {
         position: fixed;
         top: 0;
@@ -13,7 +12,6 @@
         padding-bottom: 50px;
         z-index: 100;
     }
-
     .sideNav {
         width: 240px;
         background: var(--secondary-background);
@@ -22,11 +20,9 @@
         flex-direction: column;
         gap: 4px;
         border-right: 1px solid var(--secondary-header);
-
         @media (max-width: 768px) {
             display: none;
         }
-
         .navItem {
             display: flex;
             align-items: center;
@@ -37,25 +33,20 @@
             color: var(--secondary-foreground);
             cursor: pointer;
             transition: all 0.2s ease;
-
             &:hover:not(.disabled) {
                 background: var(--secondary-header);
                 color: var(--foreground);
             }
-
             &[data-active="true"] {
                 background: var(--accent);
                 color: var(--accent-contrast);
-
                 svg {
                     color: var(--accent-contrast);
                 }
             }
-
             &.disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
-
                 span {
                     font-size: 9px;
                     font-weight: 800;
@@ -69,7 +60,6 @@
             }
         }
     }
-
     .mainContent {
         flex-grow: 1;
         overflow-y: auto;
@@ -78,7 +68,6 @@
         flex-direction: column;
     }
 }
-
 .closeButton {
     position: absolute;
     top: 1rem;
@@ -98,12 +87,7 @@
     &:hover {
         background: rgba(255, 255, 255, 0.2);
     }
-
-    @media (min-width: 768px) {
-        display: none;
-    }
 }
-
 .heroSection {
     display: flex;
     position: relative;
@@ -114,7 +98,6 @@
     border-radius: var(--border-radius);
     gap: 1.5rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-
     .iconCircle {
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(8px);
@@ -124,7 +107,6 @@
         align-items: center;
         justify-content: center;
     }
-
     .heroText {
         .heroTitle {
             color: #fff;
@@ -140,7 +122,6 @@
         }
     }
 }
-
 .toolbar {
     display: flex;
     justify-content: space-between;
@@ -148,7 +129,6 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding: 0 4px;
-
     .searchWrapper {
         display: flex;
         align-items: center;
@@ -159,7 +139,6 @@
         flex-grow: 1;
         max-width: 400px;
         color: var(--secondary-foreground);
-
         input {
             background: transparent;
             border: none;
@@ -168,95 +147,187 @@
             width: 100%;
             outline: none;
             font-family: inherit;
-
             &::placeholder {
                 color: var(--tertiary-foreground);
             }
         }
     }
 }
-
 .themeGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
 }
-
 .themeCard {
     background: var(--secondary-background);
     border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid var(--secondary-header);
-    transition: transform 0.2s, border-color 0.2s;
+    transition:
+        transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.2s;
     display: flex;
     flex-direction: column;
-
     &:hover {
         transform: translateY(-4px);
         border-color: var(--accent);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        .applyButton {
+            background: var(--accent);
+            color: var(--accent-contrast);
+        }
     }
-
     .previewContainer {
         height: 120px;
         display: flex;
-        padding: 12px;
-        gap: 8px;
-        background: var(--primary-background);
-        border-bottom: 1px solid var(--secondary-header);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         position: relative;
-
+        overflow: hidden;
         .mockSidebar {
-            width: 30px;
+            width: 24px;
             height: 100%;
-            border-radius: 4px;
-            opacity: 0.8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 8px;
+            gap: 6px;
+            flex-shrink: 0;
+            .mockCircle {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+            }
         }
-
+        .mockChannelList {
+            width: 50px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 6px;
+            gap: 8px;
+            flex-shrink: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            .mockChannelLine {
+                height: 4px;
+                border-radius: 2px;
+            }
+        }
         .mockContent {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            padding-top: 4px;
-
-            .mockLine {
-                height: 6px;
-                border-radius: 3px;
+            gap: 8px;
+            padding: 0 8px;
+            .mockHeader {
+                height: 16px;
+                width: 100%;
+                border-bottom-left-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            .mockChatLines {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                padding-top: 4px;
+                .mockLine {
+                    height: 6px;
+                    border-radius: 3px;
+                }
             }
         }
+        .mockMemberList {
+            width: 45px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 6px;
+            gap: 8px;
+            flex-shrink: 0;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            .mockMemberItem {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                .mockAvatar {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                }
+                .mockMemberLine {
+                    height: 3px;
+                    flex-grow: 1;
+                    border-radius: 1.5px;
+                }
+            }
+        }
+        .badgeOverlay {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 2;
+        }
     }
-
     .cardContent {
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
-
-        .themeInfo {
-            flex-grow: 1;
-            h3 {
-                margin: 0;
-                font-size: 1rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            p {
-                margin: 2px 0 12px;
-                font-size: 0.8rem;
-                opacity: 0.5;
+        gap: 12px;
+        .themeHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; // Vertically center text and button
+            gap: 12px;
+            .themeInfo {
+                min-width: 0;
+                flex-grow: 1;
+                h3 {
+                    margin: 0;
+                    font-size: 0.95rem;
+                    font-weight: 700;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    color: var(--foreground);
+                }
+                p {
+                    margin: 2px 0 0;
+                    font-size: 0.75rem;
+                    color: var(--secondary-foreground);
+                    span {
+                        color: var(--accent);
+                        font-weight: 600;
+                    }
+                }
             }
         }
     }
 }
-
+.applyButton {
+    background: var(--secondary-header);
+    color: var(--foreground);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    &:hover {
+        background: var(--accent);
+        color: var(--accent-contrast);
+    }
+}
 .tagList {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
 }
-
 .tag {
     font-size: 10px;
     font-weight: 600;
@@ -266,20 +337,15 @@
     color: var(--accent);
     padding: 2px 8px;
     border-radius: 12px;
-    border: 1px solid rgba(var(--accent-null), 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
-
     &:hover {
         background: var(--accent);
         color: var(--accent-contrast);
         transform: translateY(-1px);
     }
 }
-
 .versionBadge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     padding: 2px 6px;
@@ -288,57 +354,6 @@
     font-weight: bold;
     color: #fff;
 }
-
-.sectionWrapper {
-    margin-bottom: 32px;
-}
-
-.sectionTitle {
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-    color: var(--accent);
-    font-weight: 700;
-}
-
-.applyButton {
-    width: 100%;
-    background: var(--secondary-header);
-    color: var(--foreground);
-    border: none;
-    padding: 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-        background: var(--accent);
-        color: var(--accent-contrast);
-    }
-}
-
-.resetButton {
-    background: transparent;
-    border: 1px solid var(--secondary-header);
-    color: var(--secondary-foreground);
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-
-    &:hover {
-        background: var(--error);
-        color: white;
-        border-color: var(--error);
-    }
-}
-
 .skeleton {
     .previewContainer,
     .skeletonText {
@@ -362,7 +377,6 @@
         }
     }
 }
-
 @keyframes shimmer {
     0% {
         transform: translateX(-100%);
