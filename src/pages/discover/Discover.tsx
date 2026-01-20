@@ -125,7 +125,6 @@ export default observer(function Discover() {
         }
     };
 
-    // TODO: Fix theme card, this looks SO BADDD...
     const renderThemeCard = (t: any) => {
         const vars = t.variables || t;
         const isOfficial = t.creator?.toLowerCase() === "revolt";
@@ -138,68 +137,149 @@ export default observer(function Discover() {
                 <div
                     className={styles.previewContainer}
                     style={{
-                        background:
-                            vars["primary-background"] ||
-                            vars["background"] ||
-                            "#111",
+                        background: vars["primary-background"] || "#111",
                     }}>
                     <div
                         className={styles.mockSidebar}
                         style={{
                             background:
                                 vars["secondary-background"] ||
-                                "rgba(0,0,0,0.2)",
-                        }}
-                    />
+                                "rgba(0,0,0,0.3)",
+                        }}>
+                        {[...Array(3)].map((_, i) => (
+                            <div
+                                key={i}
+                                className={styles.mockCircle}
+                                style={{
+                                    background: vars["accent"] || "#fd6671",
+                                    opacity: 0.5 - i * 0.1,
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    <div
+                        className={styles.mockChannelList}
+                        style={{
+                            background:
+                                vars["secondary-background"] ||
+                                "rgba(0,0,0,0.15)",
+                        }}>
+                        {[...Array(4)].map((_, i) => (
+                            <div
+                                key={i}
+                                className={styles.mockChannelLine}
+                                style={{
+                                    width: i % 2 === 0 ? "70%" : "50%",
+                                    background: vars["foreground"] || "#fff",
+                                    opacity: 0.15,
+                                }}
+                            />
+                        ))}
+                    </div>
+
                     <div className={styles.mockContent}>
                         <div
-                            className={styles.mockLine}
+                            className={styles.mockHeader}
                             style={{
-                                width: "40%",
-                                background: vars["accent"] || "#fd6671",
+                                background:
+                                    vars["tertiary-background"] ||
+                                    "rgba(0,0,0,0.1)",
                             }}
                         />
-                        <div
-                            className={styles.mockLine}
-                            style={{
-                                width: "70%",
-                                opacity: 0.1,
-                                background: vars["foreground"] || "#fff",
-                            }}
-                        />
-                    </div>
-                    {t.version && (
-                        <div className={styles.versionBadge}>v{t.version}</div>
-                    )}
-                </div>
-                <div className={styles.cardContent}>
-                    <div className={styles.themeInfo}>
-                        <h3>
-                            {t.name}{" "}
-                            {isOfficial && (
-                                <CheckShield
-                                    size={16}
-                                    style={{
-                                        color: "var(--accent)",
-                                        marginLeft: 4,
-                                    }}
-                                />
-                            )}
-                        </h3>
-                        <p>by: {t.creator}</p>
-                        <div className={styles.tagList}>
-                            {displayTags.map((tag: string) => (
-                                <span key={tag} className={styles.tag}>
-                                    {tag}
-                                </span>
-                            ))}
+                        <div className={styles.mockChatLines}>
+                            <div
+                                className={styles.mockLine}
+                                style={{
+                                    width: "60%",
+                                    background: vars["foreground"] || "#fff",
+                                    opacity: 0.2,
+                                }}
+                            />
+                            <div
+                                className={styles.mockLine}
+                                style={{
+                                    width: "40%",
+                                    background: vars["accent"] || "#fd6671",
+                                }}
+                            />
+                            <div
+                                className={styles.mockLine}
+                                style={{
+                                    width: "80%",
+                                    background: vars["foreground"] || "#fff",
+                                    opacity: 0.1,
+                                }}
+                            />
                         </div>
                     </div>
-                    <button
-                        className={styles.applyButton}
-                        onClick={() => handleApply(t)}>
-                        Apply
-                    </button>
+
+                    <div
+                        className={styles.mockMemberList}
+                        style={{
+                            background:
+                                vars["secondary-background"] ||
+                                "rgba(0,0,0,0.15)",
+                        }}>
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className={styles.mockMemberItem}>
+                                <div
+                                    className={styles.mockAvatar}
+                                    style={{
+                                        background: vars["accent"] || "#fd6671",
+                                        opacity: 0.3,
+                                    }}
+                                />
+                                <div
+                                    className={styles.mockMemberLine}
+                                    style={{
+                                        background:
+                                            vars["foreground"] || "#fff",
+                                        opacity: 0.1,
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={styles.badgeOverlay}>
+                        {t.version && (
+                            <span className={styles.versionBadge}>
+                                v{t.version}
+                            </span>
+                        )}
+                        {isOfficial && (
+                            <CheckShield
+                                size={14}
+                                className={styles.officialIcon}
+                                style={{ color: vars["accent"] || "#fd6671" }}
+                            />
+                        )}
+                    </div>
+                </div>
+
+                <div className={styles.cardContent}>
+                    <div className={styles.themeHeader}>
+                        <div className={styles.themeInfo}>
+                            <h3>{t.name}</h3>
+                            <p>
+                                by <span>{t.creator}</span>
+                            </p>
+                        </div>
+                        <button
+                            className={styles.applyButton}
+                            onClick={() => handleApply(t)}>
+                            Apply
+                        </button>
+                    </div>
+
+                    <div className={styles.tagList}>
+                        {displayTags.map((tag: string) => (
+                            <span key={tag} className={styles.tag}>
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
