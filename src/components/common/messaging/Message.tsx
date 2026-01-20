@@ -58,6 +58,25 @@ const Message = observer(
         const content = message.content;
         const head =
             preferHead || (message.reply_ids && message.reply_ids.length > 0);
+        const hasLargeEmbed = message.embeds?.some((embed) => {
+            const isTenor =
+                embed.type === "Website" &&
+                (embed.url?.includes("tenor.com") ||
+                    embed.original_url?.includes("tenor.com"));
+            const isYoutube = embed.special?.type === "YouTube";
+
+            return (
+                isTenor ||
+                isYoutube ||
+                (embed.special && embed.special.type !== "None") ||
+                embed.image?.size === "Large"
+            );
+        });
+
+        const isOnlyURL =
+            content?.trim() === message.embeds?.[0]?.url ||
+            content?.trim() === message.embeds?.[0]?.original_url;
+        const shouldHideText = hasLargeEmbed && isOnlyURL && !replacement;
 
         const userContext = attachContext
             ? useTriggerEvents("Menu", {
@@ -109,12 +128,12 @@ const Message = observer(
                     head={
                         hideReply
                             ? false
-                            : (head &&
+                            : ((head &&
                                   !(
                                       message.reply_ids &&
                                       message.reply_ids.length > 0
                                   )) ??
-                              false
+                              false)
                     }
                     contrast={contrast}
                     sending={typeof queued !== "undefined"}
@@ -173,7 +192,9 @@ const Message = observer(
                             </span>
                         )}
                         {replacement ??
-                            (content && <Markdown content={content} />)}
+                            (content && !shouldHideText && (
+                                <Markdown content={content} />
+                            ))}
                         {!queued && <InviteList message={message} />}
                         {queued?.error && (
                             <Category>
