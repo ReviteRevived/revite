@@ -6,10 +6,7 @@ import styles from "../Login.module.scss";
 import { Text } from "preact-i18n";
 import { useState } from "preact/hooks";
 
-import { Button, Category, Preloader, Tip } from "@revoltchat/ui";
-
-import { I18nError } from "../../../context/Locale";
-
+import { Button, Preloader, Tip } from "@revoltchat/ui";
 import WaveSVG from "../../settings/assets/wave.svg";
 
 import { clientController } from "../../../controllers/client/ClientController";
@@ -212,12 +209,12 @@ export const Form = observer(({ page, callback }: Props) => {
                             page === "create"
                                 ? "login.register"
                                 : page === "login"
-                                ? "login.title"
-                                : page === "reset"
-                                ? "login.set_password"
-                                : page === "resend"
-                                ? "login.resend"
-                                : "login.reset"
+                                  ? "login.title"
+                                  : page === "reset"
+                                    ? "login.set_password"
+                                    : page === "resend"
+                                      ? "login.resend"
+                                      : "login.reset"
                         }
                     />
                 </Button>
@@ -255,14 +252,12 @@ export const Form = observer(({ page, callback }: Props) => {
                             <br />
                             <Tip palette="primary">
                                 <span>
-                                    <Text id="login.unofficial_instance" />{" "}
-                                    <a
-                                        href="https://developers.revolt.chat/faq.html"
-                                        style={{ color: "var(--accent)" }}
-                                        target="_blank"
-                                        rel="noreferrer">
-                                        <Text id="general.learn_more" />
-                                    </a>
+                                    ⚠ <b>DISCLAIMER:</b> ⚠
+                                    <br />
+                                    <br />
+                                    This is an unofficial revival project of the
+                                    original Revite client.
+                                    <br />
                                 </span>
                             </Tip>
                         </>
