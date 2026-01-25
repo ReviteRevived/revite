@@ -24,6 +24,7 @@ import MessageBase, {
     MessageInfo,
 } from "./MessageBase";
 import Attachment from "./attachments/Attachment";
+import ImageCollage from "./attachments/ImageCollage";
 import { MessageReply } from "./attachments/MessageReply";
 import { Reactions } from "./attachments/Reactions";
 import { MessageOverlayBar } from "./bars/MessageOverlayBar";
@@ -201,16 +202,21 @@ const Message = observer(
                                 <I18nError error={queued.error} />
                             </Category>
                         )}
-                        {message.attachments?.map((attachment, index) => (
-                            <Attachment
-                                key={index}
-                                attachment={attachment}
-                                hasContent={
-                                    index > 0 ||
-                                    (content ? content.length > 0 : false)
-                                }
-                            />
-                        ))}
+                        {message.attachments &&
+                        message.attachments.length > 2 ? (
+                            <ImageCollage attachments={message.attachments} />
+                        ) : (
+                            message.attachments?.map((attachment, index) => (
+                                <Attachment
+                                    key={index}
+                                    attachment={attachment}
+                                    hasContent={
+                                        index > 0 ||
+                                        (content ? content.length > 0 : false)
+                                    }
+                                />
+                            ))
+                        )}
                         {message.embeds?.map((embed, index) => (
                             <Embed key={index} embed={embed} />
                         ))}
