@@ -80,8 +80,8 @@ export const ListSkeleton = ({ count = 1 }: { count?: number }) => (
                                 i % 3 === 0
                                     ? "70%"
                                     : i % 3 === 1
-                                    ? "40%"
-                                    : "55%"
+                                      ? "40%"
+                                      : "55%"
                             }
                             height="14px"
                             style={{
@@ -100,6 +100,7 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
     const client = useClient();
     const userId = client.user!._id;
     const queue = useApplicationState().queue;
+    const settings = useApplicationState().settings;
 
     const [editing, setEditing] = useState<string | undefined>(undefined);
     const stopEditing = () => {
@@ -197,15 +198,17 @@ export default observer(({ last_id, renderer, highlight }: Props) => {
 
     let blocked = 0;
     function pushBlocked() {
-        render.push(
-            <BlockedMessage key={`blocked-${render.length}`}>
-                <X size={16} />{" "}
-                <Text
-                    id="app.main.channel.misc.blocked_messages"
-                    fields={{ count: blocked }}
-                />
-            </BlockedMessage>,
-        );
+        if (settings.get("appearance:show_blocked") ?? false) {
+            render.push(
+                <BlockedMessage key={`blocked-${render.length}`}>
+                    <X size={16} />{" "}
+                    <Text
+                        id="app.main.channel.misc.blocked_messages"
+                        fields={{ count: blocked }}
+                    />
+                </BlockedMessage>,
+            );
+        }
         blocked = 0;
     }
 
