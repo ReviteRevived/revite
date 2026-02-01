@@ -232,6 +232,7 @@ export const DetailBase = styled.div`
 export const MessageDetail = observer(
     ({ message, position }: { message: Message; position: "left" | "top" }) => {
         const dict = useDictionary();
+        const fullCreatedAt = dayjs(decodeTime(message._id)).format("LLLL");
 
         if (position === "left") {
             if (message.edited) {
@@ -254,7 +255,7 @@ export const MessageDetail = observer(
                 );
             }
             return (
-                <>
+                <Tooltip content={fullCreatedAt}>
                     <time>
                         <i className="copyBracket">[</i>
                         {dayjs(decodeTime(message._id)).format(
@@ -262,13 +263,15 @@ export const MessageDetail = observer(
                         )}
                         <i className="copyBracket">]</i>
                     </time>
-                </>
+                </Tooltip>
             );
         }
 
         return (
             <DetailBase>
-                <time>{dayjs(decodeTime(message._id)).calendar()}</time>
+                <Tooltip content={fullCreatedAt}>
+                    <time>{dayjs(decodeTime(message._id)).calendar()}</time>
+                </Tooltip>
                 {message.edited && (
                     <Tooltip content={dayjs(message.edited).format("LLLL")}>
                         <span className="edited">
