@@ -1,7 +1,12 @@
 // This code, sucks. — It is also temporary just to add themes for now :)
 // If you want to improve it, feel free. I know I made many mistales
 // I'm superrrr sleep deprived tbh.
-import { useState, useEffect, useMemo } from "react";
+
+// EDIT - 3/02/26
+// This code sucks even fucking more.
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useHistory } from "react-router-dom";
+import { observer } from "mobx-react-lite";
 import {
     Compass,
     Palette,
@@ -9,12 +14,30 @@ import {
     Bot,
     Search,
     CheckShield,
-    Exit,
+    GridAlt,
+    XCircle,
+    LogOut,
 } from "@styled-icons/boxicons-solid";
-import { observer } from "mobx-react-lite";
+
 import { useApplicationState } from "../../mobx/State";
+import { useClient } from "../../controllers/client/ClientController";
 import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
 import styles from "./styles.module.scss";
+
+const DISCOVERY_API_URL = "https://api.asraye.com/api";
+
+const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const then = new Date(dateString);
+    const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+};
 
 // Skeletons so things r pretty
 const ThemeSkeleton = () => (
@@ -34,26 +57,97 @@ const ThemeSkeleton = () => (
 );
 
 export default observer(function Discover() {
+    const history = useHistory();
+    const client = useClient();
     const themeStore = useApplicationState().settings.theme;
+
+    const [activeTab, setActiveTab] = useState<"themes" | "servers" | "bots">(
+        "themes",
+    );
     const [themes, setThemes] = useState<any[]>([]);
+    const [servers, setServers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<
+        "bumps" | "members" | "newest" | "activity"
+    >("bumps");
+
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const touchStartX = useRef<number | null>(null);
+
+    const handleExit = () => {
+        window.location.href = "/";
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchStartX.current - touchEndX;
+
+        if (diff > 50 && isSidebarOpen) {
+            setSidebarOpen(false);
+        }
+        if (diff < -50 && !isSidebarOpen && touchStartX.current < 40) {
+            setSidebarOpen(true);
+        }
+        touchStartX.current = null;
+    };
+
+    const handleJoin = async (serverId: string, inviteLink: string) => {
+        try {
+            if (client.servers.has(serverId)) {
+                history.push(`/server/${serverId}`);
+                return;
+            }
+
+            const code = inviteLink.split("/").pop() || inviteLink;
+            await client.api.post(`/invites/${code as ""}`);
+
+            let attempts = 0;
+            while (!client.servers.has(serverId) && attempts < 10) {
+                await new Promise((res) => setTimeout(res, 250));
+                attempts++;
+            }
+
+            history.push(`/server/${serverId}`);
+        } catch (e) {
+            console.error("Failed to join server:", e);
+            alert(
+                "Could not join server. It might be full or the invite is invalid.",
+            );
+        }
+    };
 
     useEffect(() => {
-        fetch(
-            "https://raw.githubusercontent.com/revoltchat/themes/refs/heads/built/all.json",
-        )
-            .then((res) => res.json())
-            .then((data) => {
-                const list = Object.entries(data).map(([slug, d]: any) => ({
-                    slug,
-                    ...d,
-                }));
-                setThemes(list);
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
-    }, []);
+        setLoading(true);
+        if (activeTab === "themes") {
+            fetch(
+                "https://raw.githubusercontent.com/revoltchat/themes/refs/heads/built/all.json",
+            )
+                .then((res) => res.json())
+                .then((data) => {
+                    const list = Object.entries(data).map(([slug, d]: any) => ({
+                        slug,
+                        ...d,
+                    }));
+                    setThemes(list);
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+        } else if (activeTab === "servers") {
+            fetch(`${DISCOVERY_API_URL}/servers?sort=${sortBy}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    setServers(Array.isArray(data) ? data : []);
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+        }
+    }, [activeTab, sortBy]);
 
     const groupedThemes = useMemo(() => {
         const filtered = themes.filter(
@@ -75,10 +169,21 @@ export default observer(function Discover() {
         };
     }, [themes, searchQuery]);
 
+    const filteredServers = useMemo(() => {
+        return servers.filter(
+            (s) =>
+                s.server_name
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                s.description
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()),
+        );
+    }, [servers, searchQuery]);
+
     // This below is the spawn of satan 👇
     const handleApply = (t: any) => {
         const source = t.variables || t;
-
         const isLight = source.light === true || t.tags?.includes("light");
         themeStore.setBase(isLight ? "light" : "dark");
 
@@ -111,18 +216,10 @@ export default observer(function Discover() {
         };
 
         flatten(source);
-
         // "Meet Thickman, a retired assassin... ensuring he stays sufficiently hydrated at all times". - Modest Pelican
         themeStore.hydrate(themePayload, true);
-
-        if (t.css) {
-            (themeStore as any).setCustomCSS?.(t.css) ||
-                (themeStore as any).setCSS?.(t.css);
-        } else {
-            // Idrk what this does when I wrote it, but I know if I remove it, everything breaks.
-            (themeStore as any).setCustomCSS?.("") ||
-                (themeStore as any).setCSS?.("");
-        }
+        const store = themeStore as any;
+        (store.setCustomCSS || store.setCSS)?.(t.css || "");
     };
 
     const renderThemeCard = (t: any) => {
@@ -285,32 +382,220 @@ export default observer(function Discover() {
         );
     };
 
+    const renderServerCard = (s: any) => (
+        <div className={styles.themeCard} key={s.server_id}>
+            <div
+                className={styles.previewContainer}
+                style={{
+                    backgroundImage: s.banner_url
+                        ? `url(${s.banner_url})`
+                        : "none",
+                    backgroundColor: "var(--secondary-background)",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    height: "100px",
+                    position: "relative",
+                }}>
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        zIndex: 2,
+                    }}>
+                    <span
+                        className={styles.versionBadge}
+                        style={{
+                            background: "rgba(0,0,0,0.6)",
+                            backdropFilter: "blur(4px)",
+                        }}>
+                        Bumped {formatTimeAgo(s.last_bumped)}
+                    </span>
+                </div>
+                <div className={styles.badgeOverlay}>
+                    {s.is_verified === 1 && (
+                        <CheckShield
+                            size={16}
+                            style={{ color: "#43b581", marginRight: "4px" }}
+                        />
+                    )}
+                    <span className={styles.versionBadge}>
+                        {s.members?.toLocaleString() || 0} Members
+                    </span>
+                </div>
+            </div>
+            <div className={styles.cardContent}>
+                <div
+                    className={styles.serverHeader}
+                    style={{
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "center",
+                    }}>
+                    <div
+                        className={styles.serverIconWrapper}
+                        style={{
+                            width: "48px",
+                            height: "48px",
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            backgroundColor: "var(--tertiary-background)",
+                            flexShrink: 0,
+                        }}>
+                        {s.icon_url ? (
+                            <img
+                                src={s.icon_url}
+                                alt=""
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                }}
+                            />
+                        ) : (
+                            <Server
+                                size={24}
+                                style={{ opacity: 0.5, margin: "12px" }}
+                            />
+                        )}
+                    </div>
+                    <div
+                        className={styles.themeInfo}
+                        style={{ flex: 1, overflow: "hidden" }}>
+                        <h3
+                            style={{
+                                margin: 0,
+                                fontSize: "0.95rem",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}>
+                            {s.server_name}
+                        </h3>
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: "0.75rem",
+                                opacity: 0.6,
+                            }}>
+                            by{" "}
+                            <span style={{ color: "var(--accent)" }}>
+                                {s.owner || "Unknown"}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <p
+                    className={styles.serverDescription}
+                    style={{
+                        fontSize: "0.85rem",
+                        marginTop: "10px",
+                        height: "2.8em",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        opacity: 0.8,
+                    }}>
+                    {s.description || "No description provided."}
+                </p>
+                <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                    <button
+                        className={styles.applyButton}
+                        style={{ flex: 1 }}
+                        onClick={() => handleJoin(s.server_id, s.invite_link)}>
+                        Join
+                    </button>
+                    <div
+                        style={{
+                            padding: "0 10px",
+                            borderRadius: "8px",
+                            background: "var(--secondary-background)",
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "0.7rem",
+                            fontWeight: "bold",
+                            border: "1px dashed var(--accent)",
+                            opacity: 0.7,
+                        }}
+                        title="Activity tracking coming soon!">
+                        Activity: WIP
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div
-            className={`${styles.discoverLayout} ${
-                isTouchscreenDevice ? styles.touchscreen : "" // Everyone should use a PC, so I don't have to worry about this.
-            }`}>
-            <div className={styles.sideNav}>
-                <div className={styles.navItem} data-active="true">
+            className={`${styles.discoverLayout} ${isTouchscreenDevice ? styles.touchscreen : ""}`} // Everyone should use a PC, so I don't have to worry about this.
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}>
+            {isSidebarOpen && isTouchscreenDevice && (
+                <div
+                    className={styles.sidebarOverlay}
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            <div
+                className={`${styles.sideNav} ${isSidebarOpen ? styles.isOpen : ""}`}>
+                {isTouchscreenDevice && (
+                    <div
+                        className={styles.mobileClose}
+                        onClick={() => setSidebarOpen(false)}>
+                        <XCircle size={24} />
+                    </div>
+                )}
+
+                <div
+                    className={styles.navItem}
+                    data-active={activeTab === "themes"}
+                    onClick={() => {
+                        setActiveTab("themes");
+                        setSidebarOpen(false);
+                    }}>
                     <Palette size={20} /> Themes
                 </div>
-                <div className={`${styles.navItem} ${styles.disabled}`}>
-                    <Server size={20} /> Servers {/* For the teasing :trol: */}
+                <div
+                    className={styles.navItem}
+                    data-active={activeTab === "servers"}
+                    onClick={() => {
+                        setActiveTab("servers");
+                        setSidebarOpen(false);
+                    }}>
+                    <Server size={20} /> Servers
                 </div>
                 <div className={`${styles.navItem} ${styles.disabled}`}>
                     <Bot size={20} /> Bots {/* For the teasing :trol: */}
                 </div>
+
+                <div
+                    className={styles.navExit}
+                    onClick={handleExit}
+                    style={{
+                        marginTop: "auto",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        padding: "15px",
+                    }}>
+                    <LogOut size={20} /> Exit
+                </div>
             </div>
 
             <div className={styles.mainContent}>
+                {isTouchscreenDevice && (
+                    <div className={styles.mobileHeader}>
+                        <GridAlt
+                            size={28}
+                            onClick={() => setSidebarOpen(true)}
+                            style={{ cursor: "pointer" }}
+                        />
+                    </div>
+                )}
+
                 <div className={styles.heroSection}>
-                    <button
-                        className={styles.closeButton}
-                        onClick={() => {
-                            window.history.back();
-                        }}>
-                        <Exit size={24} />
-                    </button>
                     <div className={styles.iconCircle}>
                         <Compass size={32} color="white" />
                     </div>
@@ -318,11 +603,9 @@ export default observer(function Discover() {
                         <div className={styles.heroTitle}>
                             Community Discovery
                         </div>
-                        {/* They should give me access frfr */}
+                        {/* They didn't give me access :( */}
                         <div className={styles.heroSubtitle}>
-                            Building this in my free-time since official
-                            discovery is currently blocked on third-party
-                            clients.
+                            Developing {activeTab} discovery in my free-time.
                         </div>
                     </div>
                 </div>
@@ -332,7 +615,7 @@ export default observer(function Discover() {
                         <Search size={18} />
                         <input
                             type="text"
-                            placeholder="Search themes or #tags..."
+                            placeholder={`Search ${activeTab}...`}
                             value={searchQuery}
                             onChange={(e) =>
                                 setSearchQuery(e.currentTarget.value)
@@ -341,37 +624,18 @@ export default observer(function Discover() {
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className={styles.themeGrid}>
-                        {Array.from({ length: 8 }).map((_, i) => (
-                            <ThemeSkeleton key={i} />
-                        ))}
-                    </div>
-                ) : (
-                    <>
-                        {/* This likes to whine about children.. Idk, I think they lost custody? */}
-                        {groupedThemes.official.length > 0 && (
-                            <section className={styles.sectionWrapper}>
-                                <h2 className={styles.sectionTitle}>
-                                    Official Themes {/* Stinky themes */}
-                                </h2>
-                                <div className={styles.themeGrid}>
-                                    {groupedThemes.official.map(
-                                        renderThemeCard,
-                                    )}
-                                </div>
-                            </section>
-                        )}
-                        <section className={styles.sectionWrapper}>
-                            <h2 className={styles.sectionTitle}>
-                                Community Themes {/* Peak themes */}
-                            </h2>
-                            <div className={styles.themeGrid}>
-                                {groupedThemes.community.map(renderThemeCard)}
-                            </div>
-                        </section>
-                    </>
-                )}
+                <div className={styles.themeGrid}>
+                    {loading
+                        ? Array.from({ length: 8 }).map((_, i) => (
+                              <ThemeSkeleton key={i} />
+                          ))
+                        : activeTab === "themes"
+                          ? [
+                                ...groupedThemes.official,
+                                ...groupedThemes.community,
+                            ].map(renderThemeCard)
+                          : filteredServers.map(renderServerCard)}
+                </div>
             </div>
         </div>
     );
