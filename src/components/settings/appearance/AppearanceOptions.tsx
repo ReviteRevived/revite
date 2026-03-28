@@ -48,6 +48,14 @@ export default function AppearanceOptions() {
                     <Text id="app.settings.pages.appearance.appearance_options.show_account_age_desc" />
                 }
             />
+            {/* Option to make mutuals a dropdown */}
+            <ObservedInputElement
+                type="checkbox"
+                value={() => settings.get("appearance:mutual_dropdown") ?? true}
+                onChange={(v) => settings.set("appearance:mutual_dropdown", v)}
+                title="Mutual Dropdowns"
+                description="Toggle whether or not mutuals show as a dropdown."
+            />
             <hr />
             <h3>
                 <Text id="app.settings.pages.appearance.theme_options.title" />
