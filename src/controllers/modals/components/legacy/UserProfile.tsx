@@ -28,6 +28,8 @@ import {
 
 import { noop } from "../../../../lib/js";
 
+import { useApplicationState } from "../../../../mobx/State";
+
 import ChannelIcon from "../../../../components/common/ChannelIcon";
 import ServerIcon from "../../../../components/common/ServerIcon";
 import Tooltip from "../../../../components/common/Tooltip";
@@ -62,6 +64,7 @@ export const UserProfile = observer(
         const client = session.client!;
         const [tab, setTab] = useState("profile");
         const [menuOpen, setMenuOpen] = useState(false);
+        const settings = useApplicationState().settings;
 
         const user = client.users.get(user_id);
         if (!user) {
@@ -137,6 +140,7 @@ export const UserProfile = observer(
 
         const badges = user.badges ?? 0;
         const flags = user.flags ?? 0;
+        const useDropdown = settings.get("appearance:mutual_dropdown") ?? true;
 
         const children = (
             <>
@@ -297,97 +301,121 @@ export const UserProfile = observer(
                             }}>
                             <Text id="app.special.popovers.user_profile.profile" />
                         </div>
-                        {user.relationship !== "User" && (
-                            <div
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                    cursor: "pointer",
-                                    position: "relative",
-                                }}
-                                onClick={() => setMenuOpen(!menuOpen)}
-                                data-active={tab !== "profile"}>
-                                <Text
-                                    id={`app.special.popovers.user_profile.mutual_${
-                                        tab === "profile" ? "friends" : tab
-                                    }`}
-                                />
-                                <ChevronDown size={16} />
-                                {menuOpen && (
-                                    <div
-                                        style={{
-                                            position: "absolute",
-                                            top: "calc(100% + 8px)",
-                                            right: 0,
-                                            background:
-                                                "var(--secondary-background)",
-                                            padding: "8px",
-                                            borderRadius: "8px",
-                                            zIndex: 100,
-                                            minWidth: "180px",
-                                            boxShadow:
-                                                "0 8px 16px rgba(0,0,0,0.5)",
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: "4px",
-                                        }}>
-                                        {[
-                                            {
-                                                id: "friends",
-                                                label: "app.special.popovers.user_profile.mutual_friends",
-                                                hide: user.bot,
-                                            },
-                                            {
-                                                id: "groups",
-                                                label: "app.special.popovers.user_profile.mutual_groups",
-                                            },
-                                            {
-                                                id: "servers",
-                                                label: "app.special.popovers.user_profile.mutual_servers",
-                                            },
-                                        ].map((item) => {
-                                            if (item.hide) return null;
-                                            return (
-                                                <div
-                                                    key={item.id}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setTab(item.id);
-                                                        setMenuOpen(false);
-                                                    }}
-                                                    style={{
-                                                        padding: "8px 12px",
-                                                        borderRadius: "4px",
-                                                        display: "flex",
-                                                        justifyContent:
-                                                            "space-between",
-                                                        alignItems: "center",
-                                                        background:
-                                                            tab === item.id
-                                                                ? "var(--accent)"
-                                                                : "transparent",
-                                                    }}>
-                                                    <Text id={item.label} />
+                        {user.relationship !== "User" &&
+                            (useDropdown ? (
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                        cursor: "pointer",
+                                        position: "relative",
+                                    }}
+                                    onClick={() => setMenuOpen(!menuOpen)}
+                                    data-active={tab !== "profile"}>
+                                    <Text
+                                        id={`app.special.popovers.user_profile.mutual_${
+                                            tab === "profile" ? "friends" : tab
+                                        }`}
+                                    />
+                                    <ChevronDown size={16} />
+                                    {menuOpen && (
+                                        <div
+                                            style={{
+                                                position: "absolute",
+                                                top: "calc(100% + 8px)",
+                                                right: 0,
+                                                background:
+                                                    "var(--secondary-background)",
+                                                padding: "8px",
+                                                borderRadius: "8px",
+                                                zIndex: 100,
+                                                minWidth: "180px",
+                                                boxShadow:
+                                                    "0 8px 16px rgba(0,0,0,0.5)",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "4px",
+                                            }}>
+                                            {[
+                                                {
+                                                    id: "friends",
+                                                    label: "app.special.popovers.user_profile.mutual_friends",
+                                                    hide: user.bot,
+                                                },
+                                                {
+                                                    id: "groups",
+                                                    label: "app.special.popovers.user_profile.mutual_groups",
+                                                },
+                                                {
+                                                    id: "servers",
+                                                    label: "app.special.popovers.user_profile.mutual_servers",
+                                                },
+                                            ].map((item) => {
+                                                if (item.hide) return null;
+                                                return (
                                                     <div
+                                                        key={item.id}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setTab(item.id);
+                                                            setMenuOpen(false);
+                                                        }}
                                                         style={{
-                                                            width: "12px",
-                                                            height: "12px",
-                                                            borderRadius: "50%",
-                                                            border: "2px solid white",
+                                                            padding: "8px 12px",
+                                                            borderRadius: "4px",
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "space-between",
+                                                            alignItems:
+                                                                "center",
                                                             background:
                                                                 tab === item.id
-                                                                    ? "white"
+                                                                    ? "var(--accent)"
                                                                     : "transparent",
-                                                        }}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
+                                                        }}>
+                                                        <Text id={item.label} />
+                                                        <div
+                                                            style={{
+                                                                width: "12px",
+                                                                height: "12px",
+                                                                borderRadius:
+                                                                    "50%",
+                                                                border: "2px solid white",
+                                                                background:
+                                                                    tab ===
+                                                                    item.id
+                                                                        ? "white"
+                                                                        : "transparent",
+                                                            }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <>
+                                    {!user.bot && (
+                                        <div
+                                            data-active={tab === "friends"}
+                                            onClick={() => setTab("friends")}>
+                                            <Text id="app.special.popovers.user_profile.mutual_friends" />
+                                        </div>
+                                    )}
+                                    <div
+                                        data-active={tab === "groups"}
+                                        onClick={() => setTab("groups")}>
+                                        <Text id="app.special.popovers.user_profile.mutual_groups" />
                                     </div>
-                                )}
-                            </div>
-                        )}
+                                    <div
+                                        data-active={tab === "servers"}
+                                        onClick={() => setTab("servers")}>
+                                        <Text id="app.special.popovers.user_profile.mutual_servers" />
+                                    </div>
+                                </>
+                            ))}
                     </div>
                 </div>
                 <div className={styles.content}>
