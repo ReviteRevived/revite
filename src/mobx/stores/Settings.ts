@@ -23,6 +23,7 @@ export interface ISettings {
     "appearance:show_send_button": boolean;
     "appearance:show_account_age": boolean;
     "appearance:show_blocked": boolean;
+    "appearance:mutual_dropdown": boolean;
 
     "appearance:theme:base": "dark" | "light";
     "appearance:theme:overrides": Partial<Overrides>;
