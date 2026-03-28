@@ -4,90 +4,102 @@ import { Column, ObservedInputElement } from "@revoltchat/ui";
 
 import { useApplicationState } from "../../../mobx/State";
 
+const APPEARANCE_SETTINGS = [
+    {
+        key: "appearance:show_blocked",
+        default: true,
+        label: "Show Blocked Messages",
+        desc: "Toggle whether messages from blocked users are visible.",
+    },
+    {
+        key: "appearance:show_account_age",
+        default: false,
+        id: "show_account_age",
+    },
+    {
+        key: "appearance:show_send_button",
+        default: false,
+        id: "show_send",
+    },
+    {
+        key: "appearance:mutual_dropdown",
+        default: true,
+        label: "Mutual Dropdowns",
+        desc: "Toggle whether or not mutuals show as a dropdown.",
+    },
+];
+
+const THEME_SETTINGS = [
+    { key: "appearance:transparency", default: true, id: "transparency" },
+    { key: "appearance:seasonal", default: true, id: "seasonal" },
+];
+
 export default function AppearanceOptions() {
-    const settings = useApplicationState().settings;
+    const { settings } = useApplicationState();
+
+    const renderSetting = (item: any) => (
+        <ObservedInputElement
+            key={item.key}
+            type="checkbox"
+            value={() => settings.get(item.key) ?? item.default}
+            onChange={(v) => settings.set(item.key, v)}
+            title={
+                item.id ? (
+                    <Text
+                        id={`app.settings.pages.appearance.appearance_options.${item.id}`}
+                    />
+                ) : (
+                    item.label
+                )
+            }
+            description={
+                item.id ? (
+                    <Text
+                        id={`app.settings.pages.appearance.appearance_options.${item.id}_desc`}
+                    />
+                ) : (
+                    item.desc
+                )
+            }
+        />
+    );
 
     return (
-        <>
-            <h3>
-                <Text id="app.settings.pages.appearance.appearance_options.title" />
-            </h3>
-            {/* Option to toggle "send message" button on desktop. */}
-            <ObservedInputElement
-                type="checkbox"
-                value={() =>
-                    settings.get("appearance:show_send_button") ?? false
-                }
-                onChange={(v) => settings.set("appearance:show_send_button", v)}
-                title={
-                    <Text id="app.settings.pages.appearance.appearance_options.show_send" />
-                }
-                description={
-                    <Text id="app.settings.pages.appearance.appearance_options.show_send_desc" />
-                }
-            />
-            {/* Option to hide blocked messages */}
-            <ObservedInputElement
-                type="checkbox"
-                value={() => settings.get("appearance:show_blocked") ?? true}
-                onChange={(v) => settings.set("appearance:show_blocked", v)}
-                title="Show Blocked Messages"
-                description="Toggle whether messages from blocked users are visible."
-            />
-            {/* Option to always show the account creation age next to join system messages. */}
-            <ObservedInputElement
-                type="checkbox"
-                value={() =>
-                    settings.get("appearance:show_account_age") ?? false
-                }
-                onChange={(v) => settings.set("appearance:show_account_age", v)}
-                title={
-                    <Text id="app.settings.pages.appearance.appearance_options.show_account_age" />
-                }
-                description={
-                    <Text id="app.settings.pages.appearance.appearance_options.show_account_age_desc" />
-                }
-            />
-            {/* Option to make mutuals a dropdown */}
-            <ObservedInputElement
-                type="checkbox"
-                value={() => settings.get("appearance:mutual_dropdown") ?? true}
-                onChange={(v) => settings.set("appearance:mutual_dropdown", v)}
-                title="Mutual Dropdowns"
-                description="Toggle whether or not mutuals show as a dropdown."
-            />
+        <Column gap="large">
+            <section>
+                <h3>
+                    <Text id="app.settings.pages.appearance.appearance_options.title" />
+                </h3>
+                {APPEARANCE_SETTINGS.map(renderSetting)}
+            </section>
+
             <hr />
-            <h3>
-                <Text id="app.settings.pages.appearance.theme_options.title" />
-            </h3>
-            <Column>
-                {/* Option to toggle transparency effects in-app. */}
-                <ObservedInputElement
-                    type="checkbox"
-                    value={() =>
-                        settings.get("appearance:transparency") ?? true
-                    }
-                    onChange={(v) => settings.set("appearance:transparency", v)}
-                    title={
-                        <Text id="app.settings.pages.appearance.theme_options.transparency" />
-                    }
-                    description={
-                        <Text id="app.settings.pages.appearance.theme_options.transparency_desc" />
-                    }
-                />
-                {/* Option to toggle seasonal effects. */}
-                <ObservedInputElement
-                    type="checkbox"
-                    value={() => settings.get("appearance:seasonal") ?? true}
-                    onChange={(v) => settings.set("appearance:seasonal", v)}
-                    title={
-                        <Text id="app.settings.pages.appearance.theme_options.seasonal" />
-                    }
-                    description={
-                        <Text id="app.settings.pages.appearance.theme_options.seasonal_desc" />
-                    }
-                />
-            </Column>
-        </>
+
+            <section>
+                <h3>
+                    <Text id="app.settings.pages.appearance.theme_options.title" />
+                </h3>
+                <Column>
+                    {THEME_SETTINGS.map((item) => (
+                        <ObservedInputElement
+                            key={item.key}
+                            type="checkbox"
+                            value={() => settings.get(item.key) ?? item.default}
+                            onChange={(v) => settings.set(item.key, v)}
+                            title={
+                                <Text
+                                    id={`app.settings.pages.appearance.theme_options.${item.id}`}
+                                />
+                            }
+                            description={
+                                <Text
+                                    id={`app.settings.pages.appearance.theme_options.${item.id}_desc`}
+                                />
+                            }
+                        />
+                    ))}
+                </Column>
+            </section>
+        </Column>
     );
 }
