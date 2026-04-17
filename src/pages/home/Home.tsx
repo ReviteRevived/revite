@@ -114,7 +114,7 @@ export default observer(() => {
                                     fontWeight: "normal",
                                     marginTop: "4px",
                                 }}>
-                                by Asraye & the community
+                                By: Asraye & The Community
                             </span>
                         </h3>
                         <div className={styles.actions}>
