@@ -45,6 +45,7 @@ import AutoComplete, { useAutoComplete } from "../AutoComplete";
 import { PermissionTooltip } from "../Tooltip";
 import FilePreview from "./bars/FilePreview";
 import ReplyBar from "./bars/ReplyBar";
+import SlowmodeBar from "./bars/SlowmodeBar";
 
 type Props = {
     channel: Channel;
@@ -605,6 +606,7 @@ export default observer(({ channel }: Props) => {
                     }
                 }}
             />
+            <SlowmodeBar channel={channel} />
             <ReplyBar
                 channel={channel}
                 replies={replies}
