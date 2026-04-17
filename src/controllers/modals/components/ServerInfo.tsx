@@ -1,6 +1,9 @@
 import { Flag, X } from "@styled-icons/boxicons-regular";
+
 import { Text } from "preact-i18n";
+
 import { Column, H1, IconButton, Modal, Row } from "@revoltchat/ui";
+
 import { useApplicationState } from "../../../mobx/State";
 
 import Markdown from "../../../components/markdown/Markdown";
@@ -44,7 +47,7 @@ export default function ServerInfo({
             });
             return true;
         },
-        children: "Edit Identity",
+        children: <Text id="app.context_menu.edit_identity" />,
         palette: "primary",
     });
 
@@ -78,7 +81,7 @@ export default function ServerInfo({
                         <H1>{server.name}</H1>
                     </Column>
                     <IconButton onClick={openReport}>
-                        <Flag size={24} />
+                        <Flag size={24} style={{ color: "var(--error)" }} />
                     </IconButton>
                     <IconButton onClick={modalController.close}>
                         <X size={36} />
