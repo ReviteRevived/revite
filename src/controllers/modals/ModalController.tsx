@@ -18,7 +18,6 @@ import { history } from "../../context/history";
 import AddFriend from "./components/AddFriend";
 import BanMember from "./components/BanMember";
 import Changelog from "./components/Changelog";
-import ChangelogUsernames from "./components/ChangelogUsernames";
 import ChannelInfo from "./components/ChannelInfo";
 import Clipboard from "./components/Clipboard";
 import ConfirmLeave from "./components/ConfirmLeave";
@@ -296,6 +295,5 @@ export const modalController = new ModalControllerExtended({
     report: ReportContent,
     report_success: ReportSuccess,
     modify_displayname: ModifyDisplayname,
-    changelog_usernames: ChangelogUsernames,
-    reset_bot_token: Confirmation
+    reset_bot_token: Confirmation,
 });
