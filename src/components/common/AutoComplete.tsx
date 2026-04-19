@@ -110,14 +110,19 @@ export function useAutoComplete(
 
             if (type === "emoji") {
                 // ! TODO: we should convert it to a Binary Search Tree and use that
-                const matches = [
+                const allEmojiMatches = [
                     ...Object.keys(emojiDictionary).filter((emoji: string) =>
                         normalize(emoji).includes(searchNormalized),
                     ),
                     ...Array.from(client.emojis.values()).filter((emoji) =>
                         normalize(emoji.name).includes(searchNormalized),
                     ),
-                ].splice(0, 5);
+                ];
+
+                const matches = Array.from(new Set(allEmojiMatches)).splice(
+                    0,
+                    5,
+                );
 
                 if (matches.length > 0) {
                     const currentPosition =
@@ -184,6 +189,9 @@ export function useAutoComplete(
                           )
                         : users
                 )
+                    .filter(
+                        (v, i, a) => a.findIndex((t) => t._id === v._id) === i,
+                    )
                     .splice(0, 5)
                     .filter((x) => typeof x !== "undefined");
 
@@ -218,6 +226,9 @@ export function useAutoComplete(
                           )
                         : channels
                 )
+                    .filter(
+                        (v, i, a) => a.findIndex((t) => t._id === v._id) === i,
+                    )
                     .splice(0, 5)
                     .filter((x) => typeof x !== "undefined");
 
