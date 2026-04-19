@@ -6,13 +6,46 @@ import { Text } from "preact-i18n";
 type Props = Omit<TippyProps, "children"> & {
     children: Children;
     content: Children;
+    icon?: Children;
 };
 
+const TooltipContent = styled.div`
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 6px;
+
+    .tooltip-icon {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+
+        img {
+            width: 1.3em;
+            height: 1.3em;
+            object-fit: contain;
+        }
+    }
+
+    .tooltip-text {
+        color: inherit;
+    }
+`;
+
 export default function Tooltip(props: Props) {
-    const { children, content, ...tippyProps } = props;
+    const { children, content, icon, ...tippyProps } = props;
+
+    const finalContent = icon ? (
+        <TooltipContent>
+            <div className="tooltip-icon">{icon}</div>
+            <div className="tooltip-text">{content}</div>
+        </TooltipContent>
+    ) : (
+        content
+    );
 
     return (
-        <Tippy content={content} animation="shift-away" {...tippyProps}>
+        <Tippy content={finalContent} animation="shift-away" {...tippyProps}>
             {/*
             // @ts-expect-error Type mis-match. */}
             <div style={`display: flex;`}>{children}</div>

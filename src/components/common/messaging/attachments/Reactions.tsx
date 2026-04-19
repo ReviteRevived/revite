@@ -17,6 +17,7 @@ import { IconButton } from "@revoltchat/ui";
 import { emojiDictionary } from "../../../../assets/emojis";
 import { useClient } from "../../../../controllers/client/ClientController";
 import { RenderEmoji } from "../../../markdown/plugins/emoji";
+import Tooltip from "../../Tooltip";
 import { HackAlertThisFileWillBeReplaced } from "../MessageBox";
 
 interface Props {
@@ -99,17 +100,33 @@ export const Reactions = observer(({ message }: Props) => {
         observer(({ id, user_ids }: { id: string; user_ids?: Set<string> }) => {
             const active = user_ids?.has(client.user!._id) || false;
 
+            const allIds = Array.from(user_ids || []);
+            const firstFiveNames = allIds
+                .slice(0, 5)
+                .map((uid) => client.users.get(uid)?.username)
+                .filter(Boolean);
+
+            const othersCount = allIds.length - firstFiveNames.length;
+            const tooltipNames =
+                firstFiveNames.join(", ") +
+                (othersCount > 0 ? ` and ${othersCount} others` : "");
+
             return (
-                <Reaction
-                    active={active}
-                    onClick={() =>
-                        active ? message.unreact(id) : message.react(id)
-                    }>
-                    <RenderEmoji match={id} /> {user_ids?.size || 0}
-                </Reaction>
+                <Tooltip
+                    icon={<RenderEmoji match={id} />}
+                    placement="top"
+                    content={tooltipNames}>
+                    <Reaction
+                        active={active}
+                        onClick={() =>
+                            active ? message.unreact(id) : message.react(id)
+                        }>
+                        <RenderEmoji match={id} /> {user_ids?.size || 0}
+                    </Reaction>
+                </Tooltip>
             );
         }),
-        [],
+        [client.users, client.user, message],
     );
 
     /**
@@ -186,7 +203,7 @@ export const ReactionWrapper: React.FC<{
         ],
     });
 
-    const skip = useRef();
+    const skip = useRef<boolean | null>(null);
     const toggle = () => {
         if (skip.current) {
             skip.current = null;
