@@ -42,7 +42,4 @@ export function RenderSpoiler({ match }: CustomComponentProps) {
     );
 }
 
-export const remarkSpoiler = createComponent(
-    "spoiler",
-    /(?:!!|\|\|)(.*?)(?:!!|\|\|)/g,
-);
+export const remarkSpoiler = createComponent("spoiler", /(!!|\|\|)(.+?)\1/g);
