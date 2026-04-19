@@ -10,6 +10,7 @@ import { emojiDictionary } from "../../assets/emojis";
 import { useClient } from "../../controllers/client/ClientController";
 import ChannelIcon from "./ChannelIcon";
 import Emoji from "./Emoji";
+import { normalize } from "./Reuseables";
 import ServerIcon from "./ServerIcon";
 import Tooltip from "./Tooltip";
 import UserIcon from "./user/UserIcon";
@@ -105,16 +106,16 @@ export function useAutoComplete(
         const result = findSearchString(el);
         if (result) {
             const [type, search] = result;
-            const regex = new RegExp(search, "i");
+            const searchNormalized = normalize(search);
 
             if (type === "emoji") {
                 // ! TODO: we should convert it to a Binary Search Tree and use that
                 const matches = [
                     ...Object.keys(emojiDictionary).filter((emoji: string) =>
-                        emoji.match(regex),
+                        normalize(emoji).includes(searchNormalized),
                     ),
                     ...Array.from(client.emojis.values()).filter((emoji) =>
-                        emoji.name.match(regex),
+                        normalize(emoji.name).includes(searchNormalized),
                     ),
                 ].splice(0, 5);
 
@@ -177,7 +178,9 @@ export function useAutoComplete(
                 const matches = (
                     search.length > 0
                         ? users.filter((user) =>
-                              user.username.toLowerCase().match(regex),
+                              normalize(user.username).includes(
+                                  searchNormalized,
+                              ),
                           )
                         : users
                 )
@@ -209,7 +212,9 @@ export function useAutoComplete(
                 const matches = (
                     search.length > 0
                         ? channels.filter((channel) =>
-                              channel.name!.toLowerCase().match(regex),
+                              normalize(channel.name || "").includes(
+                                  searchNormalized,
+                              ),
                           )
                         : channels
                 )

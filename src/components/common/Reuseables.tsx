@@ -1,6 +1,7 @@
 // Reuseable exports for Revite Revived, so I don't keep duplicating code in many places.
 // Temporary solution until I'm not lazy and learn how to make the "External"'s be my own forks.
 
+// Work around for slowmode until I make my own fork of "revolt.js"
 export async function fetchSlowmode(
     channel: any,
     setSlowmode: (val: number) => void,
@@ -28,3 +29,6 @@ export async function fetchSlowmode(
         if (setLoading) setLoading(false);
     }
 }
+
+// Normalization export
+export const normalize = (str: string) => str.normalize("NFKC").toLowerCase();
