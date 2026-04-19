@@ -1,12 +1,8 @@
 // This code, sucks. — It is also temporary just to add themes for now :)
 // If you want to improve it, feel free. I know I made many mistales
 // I'm superrrr sleep deprived tbh.
-
 // EDIT - 3/02/26
 // This code sucks even fucking more.
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useHistory } from "react-router-dom";
-import { observer } from "mobx-react-lite";
 import {
     Compass,
     Palette,
@@ -18,11 +14,17 @@ import {
     XCircle,
     LogOut,
 } from "@styled-icons/boxicons-solid";
+import { observer } from "mobx-react-lite";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useHistory } from "react-router-dom";
+
+import styles from "./styles.module.scss";
+
+import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
 
 import { useApplicationState } from "../../mobx/State";
+
 import { useClient } from "../../controllers/client/ClientController";
-import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
-import styles from "./styles.module.scss";
 
 const DISCOVERY_API_URL = "https://api.asraye.com/api";
 
@@ -528,7 +530,9 @@ export default observer(function Discover() {
 
     return (
         <div
-            className={`${styles.discoverLayout} ${isTouchscreenDevice ? styles.touchscreen : ""}`} // Everyone should use a PC, so I don't have to worry about this.
+            className={`${styles.discoverLayout} ${
+                isTouchscreenDevice ? styles.touchscreen : ""
+            }`} // Everyone should use a PC, so I don't have to worry about this.
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}>
             {isSidebarOpen && isTouchscreenDevice && (
@@ -538,7 +542,9 @@ export default observer(function Discover() {
                 />
             )}
             <div
-                className={`${styles.sideNav} ${isSidebarOpen ? styles.isOpen : ""}`}>
+                className={`${styles.sideNav} ${
+                    isSidebarOpen ? styles.isOpen : ""
+                }`}>
                 {isTouchscreenDevice && (
                     <div
                         className={styles.mobileClose}
@@ -630,11 +636,11 @@ export default observer(function Discover() {
                               <ThemeSkeleton key={i} />
                           ))
                         : activeTab === "themes"
-                          ? [
-                                ...groupedThemes.official,
-                                ...groupedThemes.community,
-                            ].map(renderThemeCard)
-                          : filteredServers.map(renderServerCard)}
+                        ? [
+                              ...groupedThemes.official,
+                              ...groupedThemes.community,
+                          ].map(renderThemeCard)
+                        : filteredServers.map(renderServerCard)}
                 </div>
             </div>
         </div>

@@ -129,12 +129,12 @@ const Message = observer(
                     head={
                         hideReply
                             ? false
-                            : ((head &&
+                            : (head &&
                                   !(
                                       message.reply_ids &&
                                       message.reply_ids.length > 0
                                   )) ??
-                              false)
+                              false
                     }
                     contrast={contrast}
                     sending={typeof queued !== "undefined"}

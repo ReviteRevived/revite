@@ -1,12 +1,13 @@
 import { Route, Switch } from "react-router";
+
 import { useEffect, useState } from "preact/hooks";
 
 import { internalSubscribe } from "../../lib/eventEmitter";
 
 import SidebarBase from "./SidebarBase";
 import MemberSidebar from "./right/MemberSidebar";
-import { SearchSidebar } from "./right/Search";
 import { PinnedMessages } from "./right/Pins";
+import { SearchSidebar } from "./right/Search";
 
 export default function RightSidebar() {
     const [sidebar, setSidebar] = useState<"search" | "pins" | undefined>();

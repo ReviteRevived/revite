@@ -1,7 +1,9 @@
 import { API } from "revolt.js";
-import classNames from "classnames";
-import Attachment from "./Attachment";
+
 import styles from "./ImageCollage.module.scss";
+import classNames from "classnames";
+
+import Attachment from "./Attachment";
 
 interface Props {
     attachments: API.File[];

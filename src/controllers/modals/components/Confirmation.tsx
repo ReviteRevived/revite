@@ -93,9 +93,8 @@ export default function Confirmation(
                     case "reset_bot_token":
                         clientController
                             .getAvailableClient()
-                            .bots
-                            .edit(props.target.id, { remove: ["Token"] })
-                            .then(props.callback)
+                            .bots.edit(props.target.id, { remove: ["Token"] })
+                            .then(props.callback);
                 }
             }}
             submit={{

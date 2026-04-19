@@ -80,8 +80,8 @@ export const ListSkeleton = ({ count = 1 }: { count?: number }) => (
                                 i % 3 === 0
                                     ? "70%"
                                     : i % 3 === 1
-                                      ? "40%"
-                                      : "55%"
+                                    ? "40%"
+                                    : "55%"
                             }
                             height="14px"
                             style={{

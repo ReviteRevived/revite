@@ -7,6 +7,7 @@ import { Text } from "preact-i18n";
 import { useState } from "preact/hooks";
 
 import { Button, Preloader, Tip } from "@revoltchat/ui";
+
 import WaveSVG from "../../settings/assets/wave.svg";
 
 import { clientController } from "../../../controllers/client/ClientController";
@@ -209,12 +210,12 @@ export const Form = observer(({ page, callback }: Props) => {
                             page === "create"
                                 ? "login.register"
                                 : page === "login"
-                                  ? "login.title"
-                                  : page === "reset"
-                                    ? "login.set_password"
-                                    : page === "resend"
-                                      ? "login.resend"
-                                      : "login.reset"
+                                ? "login.title"
+                                : page === "reset"
+                                ? "login.set_password"
+                                : page === "resend"
+                                ? "login.resend"
+                                : "login.reset"
                         }
                     />
                 </Button>

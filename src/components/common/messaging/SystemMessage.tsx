@@ -25,10 +25,12 @@ import { Text } from "preact-i18n";
 import { Row } from "@revoltchat/ui";
 
 import { TextReact } from "../../../lib/i18n";
-import { useApplicationState } from "../../../mobx/State";
-import { dayjs } from "../../../context/Locale";
-import { useClient } from "../../../controllers/client/ClientController";
 
+import { useApplicationState } from "../../../mobx/State";
+
+import { dayjs } from "../../../context/Locale";
+
+import { useClient } from "../../../controllers/client/ClientController";
 import Markdown from "../../markdown/Markdown";
 import Tooltip from "../Tooltip";
 import UserShort from "../user/UserShort";

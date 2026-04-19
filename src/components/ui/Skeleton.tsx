@@ -1,6 +1,6 @@
+import styles from "./Skeleton.module.scss";
 import { JSX } from "preact";
 import { useEffect, useRef } from "preact/hooks";
-import styles from "./Skeleton.module.scss";
 
 const SkeletonList = (props: {
     count?: number;

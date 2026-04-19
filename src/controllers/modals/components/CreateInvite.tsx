@@ -1,4 +1,5 @@
 import styled from "styled-components";
+
 import { Text } from "preact-i18n";
 import { useEffect, useState } from "preact/hooks";
 
@@ -6,10 +7,10 @@ import { ModalForm, Button } from "@revoltchat/ui";
 
 import { noopAsync } from "../../../lib/js";
 
+import { Skeleton } from "../../../components/ui/Skeleton";
 import { takeError } from "../../client/jsx/error";
 import { modalController } from "../ModalController";
 import { ModalProps } from "../types";
-import { Skeleton } from "../../../components/ui/Skeleton";
 
 const InviteContainer = styled.div`
     display: flex;

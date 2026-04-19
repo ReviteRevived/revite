@@ -1,13 +1,15 @@
 import { useParams } from "react-router-dom";
 import { API, User } from "revolt.js";
 import styled from "styled-components/macro";
+
 import { useEffect, useState } from "preact/hooks";
+
 import { Button, Category, ComboBox, Preloader, Tip } from "@revoltchat/ui";
 
-import UserIcon from "../../components/common/user/UserIcon";
-import UserStatus from "../../components/common/user/UserStatus";
 import UserBadges from "../../components/common/user/UserBadges";
+import UserIcon from "../../components/common/user/UserIcon";
 import { Username } from "../../components/common/user/UserShort";
+import UserStatus from "../../components/common/user/UserStatus";
 import Markdown from "../../components/markdown/Markdown";
 import { useClient } from "../../controllers/client/ClientController";
 import { modalController } from "../../controllers/modals/ModalController";

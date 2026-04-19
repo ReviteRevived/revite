@@ -1,12 +1,13 @@
 import { useHistory } from "react-router-dom";
+
+import styles from "./CreateServer.module.scss";
 import { useState } from "preact/hooks";
+
 import { Modal, Button, InputBox, Category, Column } from "@revoltchat/ui";
 
 import { useClient } from "../../client/ClientController";
 import { mapError } from "../../client/jsx/error";
 import { ModalProps } from "../types";
-
-import styles from "./CreateServer.module.scss";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 

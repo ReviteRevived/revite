@@ -1,5 +1,7 @@
 import styled, { css } from "styled-components";
+
 import { useState } from "preact/hooks";
+
 import { createComponent, CustomComponentProps } from "./remarkRegexComponent";
 
 const Spoiler = styled.span<{ shown: boolean }>`

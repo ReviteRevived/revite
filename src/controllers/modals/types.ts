@@ -192,9 +192,9 @@ export type Modal = {
       }
     | {
           type: "reset_bot_token";
-          target: { name: string, id: string },
+          target: { name: string; id: string };
           callback: () => Promise<void>;
-    }
+      }
 );
 
 export type ModalProps<T extends Modal["type"]> = Modal & { type: T } & {

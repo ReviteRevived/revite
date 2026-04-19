@@ -494,23 +494,25 @@ function BotCard({ bot, onDelete, onUpdate }: Props) {
                             <Text id="app.settings.pages.bots.add" />
                         </Button>
                         <Button
-                        palette="error"
-                            onClick={ async () => {
-                                    modalController.push({
-                                        type: "reset_bot_token",
-                                        target: { name: user.username, id: bot._id },
-                                        callback: async () => {
-                                            const updatedBot = await client.bots.fetch(bot._id);
-                                            setData({
-                                                ...data,
-                                                token: updatedBot.bot.token
-                                            })
-                                        }
-                                    })
-
-                            }
-                            }>
-                                <Text id="app.settings.pages.bots.reset_token" />
+                            palette="error"
+                            onClick={async () => {
+                                modalController.push({
+                                    type: "reset_bot_token",
+                                    target: {
+                                        name: user.username,
+                                        id: bot._id,
+                                    },
+                                    callback: async () => {
+                                        const updatedBot =
+                                            await client.bots.fetch(bot._id);
+                                        setData({
+                                            ...data,
+                                            token: updatedBot.bot.token,
+                                        });
+                                    },
+                                });
+                            }}>
+                            <Text id="app.settings.pages.bots.reset_token" />
                         </Button>
                     </>
                 )}
