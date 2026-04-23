@@ -5,7 +5,13 @@ import styles from "./Panes.module.scss";
 import { Text } from "preact-i18n";
 import { useMemo } from "preact/hooks";
 
-import { Checkbox, LineDivider, Tip } from "@revoltchat/ui";
+import {
+    Checkbox,
+    LineDivider,
+    Tip,
+    ObservedInputElement,
+    Column,
+} from "@revoltchat/ui";
 
 import { useApplicationState } from "../../../mobx/State";
 
@@ -125,7 +131,7 @@ function Entry({ entry: [x, lang], selected, onSelect }: Props) {
  * Component providing the language selection menu.
  */
 export const Languages = observer(() => {
-    const locale = useApplicationState().locale;
+    const { locale, settings } = useApplicationState();
     const language = locale.getLanguage();
 
     // Generate languages array.
@@ -176,6 +182,52 @@ export const Languages = observer(() => {
 
     return (
         <div className={styles.languages}>
+            <section>
+                <Tip palette="warning">
+                    <Column gap="none">
+                        <span>
+                            This feature is W.I.P!! Settings currently require a
+                            refresh to take effect.
+                        </span>
+                        <a onClick={() => window.location.reload()}>
+                            <strong>Click here to refresh now.</strong>
+                        </a>
+                    </Column>
+                </Tip>
+                <h3>Date & Time Settings</h3>
+                <Column>
+                    <ObservedInputElement
+                        type="checkbox"
+                        value={() =>
+                            settings.get("appearance:twelvehour") ?? false
+                        }
+                        onChange={(v) =>
+                            settings.set("appearance:twelvehour", v)
+                        }
+                        title="Use 12-hour clock"
+                        description="Display time in AM/PM format."
+                    />
+                    <ObservedInputElement
+                        type="combo"
+                        value={() =>
+                            settings.get("appearance:date_format") ??
+                            "traditional"
+                        }
+                        onChange={(v) =>
+                            settings.set("appearance:date_format", v as any)
+                        }
+                        field="Date Format"
+                        options={[
+                            { value: "traditional", name: "DD/MM/YYYY" },
+                            { value: "simplified", name: "MM/DD/YYYY" },
+                            { value: "ISO8601", name: "YYYY-MM-DD" },
+                        ]}
+                    />
+                </Column>
+            </section>
+
+            <LineDivider />
+
             <h3>
                 <Text id="app.settings.pages.language.select" />
             </h3>

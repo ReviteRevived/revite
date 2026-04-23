@@ -41,7 +41,10 @@ export interface Dictionary {
 }
 
 export default observer(({ children }: Props) => {
-    const locale = useApplicationState().locale;
+    const state = useApplicationState();
+    const locale = state.locale;
+    const settings = state.settings;
+
     const [definitions, setDefinition] = useState<Dictionary>(
         definition as Dictionary,
     );
@@ -54,7 +57,10 @@ export default observer(({ children }: Props) => {
             if (locale === "en") {
                 // If English, make sure to restore everything to defaults.
                 // Use what we already have.
-                const defn = transformLanguage(definition as Dictionary);
+                const defn = transformLanguage(
+                    definition as Dictionary,
+                    settings,
+                );
                 setDefinition(defn);
                 dayjs.locale("en");
                 dayjs.updateLocale("en", { calendar: defn.dayjs });
@@ -64,7 +70,7 @@ export default observer(({ children }: Props) => {
             import(`../../external/lang/${source.i18n}.json`).then(
                 async (lang_file) => {
                     // Transform the definitions data.
-                    const defn = transformLanguage(lang_file.default);
+                    const defn = transformLanguage(lang_file.default, settings);
 
                     // Determine and load dayjs locales.
                     const target = source.dayjs ?? source.i18n;
@@ -85,7 +91,7 @@ export default observer(({ children }: Props) => {
                 },
             );
         },
-        [source.dayjs, source.i18n],
+        [source.dayjs, source.i18n, settings],
     );
 
     useEffect(() => loadLanguage(lang), [lang, source, loadLanguage]);
@@ -103,7 +109,7 @@ export default observer(({ children }: Props) => {
  * @param source Dictionary definition to transform
  * @returns Transformed dictionary definition
  */
-function transformLanguage(source: Dictionary) {
+function transformLanguage(source: Dictionary, settings: any) {
     // Fallback untranslated strings to English (UK)
     const obj = defaultsDeep(source, definition);
 
@@ -113,16 +119,20 @@ function transformLanguage(source: Dictionary) {
     const { defaults } = dayjs;
 
     // Determine whether we are using 12-hour clock.
-    const twelvehour = defaults?.twelvehour
-        ? defaults.twelvehour === "yes"
-        : false;
+    const userTwelveHour = settings.get("appearance:twelvehour");
+    const twelvehour =
+        userTwelveHour !== undefined
+            ? userTwelveHour
+            : defaults?.twelvehour === "yes";
 
     // Determine what date separator we are using.
     const separator: string = defaults?.date_separator ?? "/";
 
     // Determine what date format we are using.
     const date: "traditional" | "simplified" | "ISO8601" =
-        defaults?.date_format ?? "traditional";
+        settings.get("appearance:date_format") ??
+        defaults?.date_format ??
+        "traditional";
 
     // Available date formats.
     const DATE_FORMATS = {

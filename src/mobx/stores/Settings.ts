@@ -25,6 +25,9 @@ export interface ISettings {
     "appearance:show_blocked": boolean;
     "appearance:mutual_dropdown": boolean;
 
+    "appearance:twelvehour": boolean;
+    "appearance:date_format": "traditional" | "simplified" | "ISO8601";
+
     "appearance:theme:base": "dark" | "light";
     "appearance:theme:overrides": Partial<Overrides>;
     "appearance:theme:light": boolean;
@@ -34,7 +37,6 @@ export interface ISettings {
 
     "security:trustedOrigins": string[];
 }
-
 /**
  * Manages user settings.
  */
