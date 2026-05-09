@@ -1,4 +1,4 @@
-import { ChevronRight } from "@styled-icons/boxicons-regular";
+import { ChevronRight, Search } from "@styled-icons/boxicons-regular";
 import { UserDetail, MessageAdd, UserPlus } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { User } from "revolt.js";
@@ -6,8 +6,9 @@ import { User } from "revolt.js";
 import styles from "./Friend.module.scss";
 import classNames from "classnames";
 import { Text } from "preact-i18n";
+import { useState } from "preact/hooks";
 
-import { IconButton } from "@revoltchat/ui";
+import { IconButton, InputBox } from "@revoltchat/ui";
 
 import { TextReact } from "../../lib/i18n";
 import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
@@ -22,7 +23,18 @@ import { Friend } from "./Friend";
 
 export default observer(() => {
     const client = useClient();
-    const users = [...client.users.values()];
+    const [search, setSearch] = useState("");
+    const users = [...client.users.values()]
+        .filter((user) => {
+            if (!search) return true;
+            const query = search.toLowerCase();
+            return (
+                user.username.toLowerCase().includes(query) ||
+                user.displayName?.toLowerCase().includes(query)
+            );
+        })
+        .sort((a, b) => a.username.localeCompare(b.username));
+
     users.sort((a, b) => a.username.localeCompare(b.username));
 
     const friends = users.filter((x) => x.relationship === "Friend");
@@ -70,6 +82,20 @@ export default observer(() => {
                 noBurger>
                 <div className={styles.title}>
                     <Text id="app.navigation.tabs.friends" />
+                </div>
+                <div
+                    className={styles.searchContainer}
+                    style={{
+                        flexGrow: 1,
+                        margin: "0 16px",
+                        maxWidth: "400px",
+                    }}>
+                    <InputBox
+                        icon={<Search size={18} />}
+                        placeholder="Search..."
+                        value={search}
+                        onInput={(e) => setSearch(e.currentTarget.value)}
+                    />
                 </div>
                 <div className={styles.actions}>
                     {/*<Tooltip content={"Create Category"} placement="bottom">
