@@ -41,33 +41,33 @@ const Header = styled.div<{ background?: string }>`
     border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
 `;
 
-const ContentWrapper = styled.div`
+const ContentWrapper = styled.div<{ hasHeader: boolean }>`
     background: var(--primary-header);
     padding: 20px;
-    border-radius: 0 0 var(--border-radius-large) var(--border-radius-large);
+    border-radius: ${(props) =>
+        props.hasHeader
+            ? "0 0 var(--border-radius-large) var(--border-radius-large)"
+            : "var(--border-radius-large)"};
     margin-bottom: 2em;
 `;
 
-const BotInfo = styled.div`
+const BotInfo = styled.div<{ hasHeader: boolean }>`
     gap: 20px;
     display: flex;
     align-items: flex-start;
-    margin-top: -50px; /* Overlap the banner slightly */
+    margin-top: ${(props) =>
+        props.hasHeader
+            ? "-50px"
+            : "0"}; /* Change depending on whether or not the banner exists */
     margin-bottom: 20px;
 
     .details {
-        padding-top: 45px;
+        padding-top: ${(props) => (props.hasHeader ? "45px" : "0")};
         h1 {
             margin: 0;
             font-size: 1.8rem;
         }
     }
-`;
-
-const BadgeRow = styled.div`
-    margin-top: 8px;
-    display: flex;
-    gap: 4px;
 `;
 
 const OwnerEntry = styled.div`
@@ -86,6 +86,16 @@ const OwnerEntry = styled.div`
     }
 `;
 
+const AvatarImg = styled.img<{ hasHeader: boolean }>`
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background-color: var(--secondary-background);
+    object-fit: cover;
+    border: 6px solid var(--primary-header);
+    box-sizing: content-box;
+`;
+
 const Option = styled.div`
     gap: 8px;
     display: flex;
@@ -97,26 +107,38 @@ export default function InviteBot() {
     const { id } = useParams<{ id: string }>();
     const client = useClient();
 
-    const [data, setData] = useState<API.PublicBot>();
+    const [data, setData] =
+        useState<{ _id: string; username: string; description?: string }>();
     const [user, setUser] = useState<User>();
     const [profile, setProfile] = useState<API.UserProfile>();
     const [server, setServer] = useState("none");
     const [group, setGroup] = useState("none");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!id) return;
+        setLoading(true);
 
-        client.bots.fetchPublic(id).then(setData).catch(console.error);
-
-        client.users.fetch(id).then((u) => {
-            setUser(u);
-            u.fetchProfile()
-                .then(setProfile)
-                .catch(() => {});
-        });
+        client.api
+            .get(`/bots/${id as any}/invite`)
+            .then((inviteData) => {
+                setData(inviteData as any);
+                return client.users.fetch(id).catch(() => null);
+            })
+            .then((u) => {
+                if (u) {
+                    setUser(u);
+                    return u.fetchProfile().catch(() => null);
+                }
+            })
+            .then((p) => {
+                if (p) setProfile(p as API.UserProfile);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, [id, client]);
 
-    if (!data || !user) {
+    if (loading || !data) {
         return (
             <Page>
                 <Preloader type="spinner" />
@@ -124,35 +146,51 @@ export default function InviteBot() {
         );
     }
 
-    const backgroundURL =
-        profile?.background &&
-        client.generateFileURL(profile.background as any, { width: 1000 });
+    const avatarURL =
+        user?.avatarURL ||
+        (data?.avatar // Avatar likes to bitch, but it works. So.. Don't fix it
+            ? `https://cdn.stoatusercontent.com/avatars/${data.avatar}/original`
+            : null);
 
-    const owner = user.bot?.owner ? client.users.get(user.bot.owner) : null;
+    const backgroundURL = profile?.background
+        ? client.generateFileURL(profile.background as any, { width: 1000 })
+        : undefined;
+
+    const hasHeader = !!backgroundURL;
+
+    const ownerId = user?.bot?.owner || (data as any)?.owner;
+    const owner = ownerId ? client.users.get(ownerId) : null;
 
     return (
         <Page>
-            <Header background={backgroundURL} />
-
-            <ContentWrapper>
-                <BotInfo>
-                    <UserIcon size={96} target={user} status={true} />
+            {hasHeader && <Header background={backgroundURL} />}
+            <ContentWrapper hasHeader={hasHeader}>
+                <BotInfo hasHeader={hasHeader}>
+                    <AvatarImg
+                        src={avatarURL}
+                        alt={data.username}
+                        hasHeader={hasHeader}
+                    />
                     <div className="details">
                         <h1>{data.username}</h1>
-                        <UserStatus user={user} />
-
-                        {(user.badges || 0) > 0 && (
-                            <BadgeRow>
+                        {user && <UserStatus user={user} />}
+                        {user?.badges && (
+                            <div
+                                style={{
+                                    marginTop: "8px",
+                                    display: "flex",
+                                    gap: "4px",
+                                }}>
                                 <UserBadges
-                                    badges={user.badges!}
+                                    badges={user.badges}
                                     uid={user._id}
                                 />
-                            </BadgeRow>
+                            </div>
                         )}
                     </div>
                 </BotInfo>
 
-                {user.bot && (
+                {ownerId && (
                     <>
                         <Category>Bot Owner</Category>
                         <OwnerEntry
@@ -222,6 +260,19 @@ export default function InviteBot() {
                         Add
                     </Button>
                 </Option>
+
+                <div style={{ marginTop: "2em" }}>
+                    <Tip palette="warning">
+                        Public bots are not proactively moderated. Please
+                        exercise caution when adding bots to your server.
+                    </Tip>
+                    <div style={{ height: "8px" }} />
+                    <Tip palette="primary">
+                        This bot will be added without any initial permissions.
+                        You will need to manually assign a role or update
+                        channel overrides for the bot to function.
+                    </Tip>
+                </div>
             </ContentWrapper>
         </Page>
     );
