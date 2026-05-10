@@ -174,12 +174,23 @@ export function EmbedInvite({ code }: Props) {
     );
 }
 
-const RE_INVITE =
-    /(?:https?:\/\/)?[\w.-]+\.[a-z]{2,}(?:\/invite\/|\/)([A-Z0-9_-]+)/gi;
+const INVITE_PATHS = [
+    `${location.hostname}/invite`,
+    "app.revolt.chat/invite",
+    "nightly.revolt.chat/invite",
+    "local.revolt.chat/invite",
+    "rvlt.gg",
+];
+
+const RE_INVITE = new RegExp(
+    `(?:${INVITE_PATHS.map((x) => x.replaceAll(".", "\\.")).join(
+        "|",
+    )})/([A-Za-z0-9]*)`,
+    "g",
+);
 
 export default observer(({ message }: { message: Message }) => {
     if (typeof message.content !== "string") return null;
-
     const matches = [...message.content.matchAll(RE_INVITE)];
 
     if (matches.length > 0) {
@@ -191,8 +202,6 @@ export default observer(({ message }: { message: Message }) => {
             <>
                 {entries.map(
                     (entry) =>
-                        entry &&
-                        entry.length > 2 &&
                         entry !== "discover" && (
                             <EmbedInvite key={entry} code={entry} />
                         ),
