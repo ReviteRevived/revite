@@ -13,44 +13,50 @@ const CrashContainer = styled.div`
     // defined for the Button component
     --error: #ed4245;
     --primary-background: #2d2d2d;
-
     height: 100%;
     padding: 12px;
-
     background: #191919;
     color: white;
-
     h3 {
         margin: 0;
         margin-bottom: 12px;
     }
-
     code {
         font-size: 1.1em;
     }
-
     .buttonDivider {
         margin: 8px;
     }
 `;
 
 interface Props {
-    children: Children;
+    children: any;
     section: "client" | "renderer";
 }
 
-const ERROR_URL = "https://reporting.revolt.chat";
-
+const ERROR_URL = "https://api.asraye.com/api/notify";
+const REPORT_API_KEY = import.meta.env.VITE_REPORT_API_KEY;
 export function reportError(error: Error, section: string) {
     stackTrace.fromError(error).then((stackframes) =>
-        axios.post(ERROR_URL, {
-            stackframes,
-            rawStackTrace: error.stack,
-            origin: window.origin,
-            commitSHA: GIT_REVISION,
-            userAgent: navigator.userAgent,
-            section,
-        }),
+        axios
+            .post(
+                ERROR_URL,
+                {
+                    message: `🚨 **New Crash Reported**\n\n**Section:** ${section}\n**Revision:** \`${GIT_REVISION}\`\n**Error:** \`${
+                        error.message
+                    }\` \n\n**Stack Trace:**\n\`\`\`\n${error.stack?.slice(
+                        0,
+                        1500,
+                    )}\n\`\`\``,
+                },
+                {
+                    headers: {
+                        "x-api-key": REPORT_API_KEY,
+                        "Content-Type": "application/json",
+                    },
+                },
+            )
+            .catch((err) => console.error("Could not send report:", err)),
     );
 }
 
@@ -71,41 +77,39 @@ export default function ErrorBoundary({ children, section }: Props) {
         if (error) {
             reportError(error, section);
         }
-    }, [error]);
+    }, [error, section]);
 
     if (error) {
         return (
             <CrashContainer>
-                {section === "client" ? (
-                    <>
-                        <h3>Client Crash Report</h3>
-                        <Button onClick={ignoreError}>
-                            Ignore error and try to reload app
-                        </Button>
-                        <div class="buttonDivider" />
-                        <Button onClick={() => location.reload()}>
-                            Refresh page
-                        </Button>
-                        <div class="buttonDivider" />
-                        <Button palette="error" onClick={reset}>
-                            {confirm ? "Are you sure?" : "Reset all app data"}
-                        </Button>
-                    </>
-                ) : (
-                    <>
-                        <h3>Component Error</h3>
-                        <button onClick={ignoreError}>
-                            Ignore error and try render again
-                        </button>
-                    </>
-                )}
+                <h3>
+                    {section === "client"
+                        ? "Client Crash Report"
+                        : "Component Error"}
+                </h3>
+
+                <Button onClick={ignoreError}>
+                    {" "}
+                    Ignore error and try again
+                </Button>
+                <div class="buttonDivider" />
+
+                <Button onClick={() => location.reload()}>Refresh page</Button>
+                <div class="buttonDivider" />
+
+                <Button palette="error" onClick={reset}>
+                    {confirm ? "Are you sure?" : "Reset all app data"}
+                </Button>
+
                 <br />
                 <br />
-                <div>Revolt has crashed. Here's the error:</div>
+                <div>Revite Revived has encountered an error:</div>
                 <pre>
-                    <code>{error?.stack}</code>
+                    <code>{error?.message}</code>
                 </pre>
-                <div>This error has been automatically reported.</div>
+                <div style={{ opacity: 0.6, fontSize: "0.8em" }}>
+                    This error has been automatically reported!
+                </div>
             </CrashContainer>
         );
     }
