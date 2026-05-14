@@ -42,11 +42,6 @@ export default observer(() => {
     const lists = [
         ["", users.filter((x) => x.relationship === "Incoming")],
         [
-            "app.special.friends.sent",
-            users.filter((x) => x.relationship === "Outgoing"),
-            "outgoing",
-        ],
-        [
             "app.status.online",
             friends.filter(
                 (x) => x.online && x.status?.presence !== "Invisible",
@@ -59,6 +54,11 @@ export default observer(() => {
                 (x) => !x.online || x.status?.presence === "Invisible",
             ),
             "offline",
+        ],
+        [
+            "app.special.friends.sent",
+            users.filter((x) => x.relationship === "Outgoing"),
+            "outgoing",
         ],
         [
             "app.special.friends.blocked",
