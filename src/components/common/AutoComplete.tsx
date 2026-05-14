@@ -65,7 +65,7 @@ export function useAutoComplete(
             const cursor = el.selectionStart;
             const content = el.value.slice(0, cursor);
 
-            const valid = /[\w\-]/;
+            const valid = /[\w\-\s]/;
 
             let j = content.length - 1;
             if (content[j] === "@") {
@@ -180,12 +180,18 @@ export function useAutoComplete(
                     (x) => x._id !== "00000000000000000000000000",
                 );
 
+                // TODO: Search nicknames as well, not just display names.
                 const matches = (
                     search.length > 0
-                        ? users.filter((user) =>
-                              normalize(user.username).includes(
-                                  searchNormalized,
-                              ),
+                        ? users.filter(
+                              (user) =>
+                                  normalize(user.username).includes(
+                                      searchNormalized,
+                                  ) ||
+                                  (user.display_name &&
+                                      normalize(user.display_name).includes(
+                                          searchNormalized,
+                                      )),
                           )
                         : users
                 )
@@ -508,7 +514,7 @@ export default function AutoComplete({
                 {state.type === "user" &&
                     state.matches.map((match, i) => (
                         <button
-                            key={match}
+                            key={match._id}
                             className={i === state.selected ? "active" : ""}
                             onMouseEnter={() =>
                                 (i !== state.selected || !state.within) &&
@@ -525,9 +531,38 @@ export default function AutoComplete({
                                     within: false,
                                 })
                             }
-                            onClick={onClick}>
-                            <UserIcon size={24} target={match} status={true} />
-                            {match.username}
+                            onClick={onClick}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                            }}>
+                            <UserIcon size={32} target={match} status={true} />
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "flex-start",
+                                    overflow: "hidden",
+                                }}>
+                                <span
+                                    style={{
+                                        fontWeight: "600",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                    }}>
+                                    {match.display_name ?? match.username}
+                                </span>
+                                <span
+                                    style={{
+                                        fontSize: "0.8rem",
+                                        opacity: 0.6,
+                                        whiteSpace: "nowrap",
+                                    }}>
+                                    @{match.username}
+                                </span>
+                            </div>
                         </button>
                     ))}
                 {state.type === "channel" &&
