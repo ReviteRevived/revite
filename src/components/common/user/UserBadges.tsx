@@ -23,10 +23,14 @@ const BadgesBase = styled.div`
     gap: 8px;
     display: flex;
     flex-direction: row;
+    align-items: center;
 
     img {
         width: 24px;
         height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 `;
 
@@ -157,10 +161,8 @@ export default function UserBadges({ badges, uid }: Props) {
                     <></>
                 )}
                 {uid === "01H72THN43HSSYMZY81249J6GP" ? (
-                    <Tooltip content="Revite Revived Dev">
-                        <span style={{ fontSize: "1.1rem", lineHeight: 1 }}>
-                            👑
-                        </span>
+                    <Tooltip content="ReviteRevived Founder">
+                        <span style={{ fontSize: "1.1rem" }}>👑</span>
                     </Tooltip>
                 ) : (
                     <></>
