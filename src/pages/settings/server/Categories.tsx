@@ -87,20 +87,21 @@ const Row = styled.div`
     }
 `;
 
-const KanbanListHeader = styled.div`
+const KanbanListHeader = styled.div<{ renamable?: boolean }>`
     height: 34px;
     display: grid;
     min-width: 34px;
     place-items: center;
-    cursor: pointer !important;
     transition: 0.2s ease background-color;
+    cursor: ${(props) => (props.renamable ? "pointer" : "default")} !important;
 
     > * {
         font: var(--font);
     }
 
     &:hover {
-        background: var(--background);
+        background: ${(props) =>
+            props.renamable ? "var(--background)" : "transparent"};
     }
 `;
 
@@ -152,7 +153,7 @@ export const Categories = observer(({ server }: Props) => {
 
     const defaultCategory = useMemo(() => {
         return {
-            title: "Uncategorized",
+            title: "Default",
             channels: [...server.channels]
                 .filter((x) => x)
                 .map((x) => x!._id)
@@ -244,6 +245,7 @@ export const Categories = observer(({ server }: Props) => {
                                         server={server}
                                         index={0}
                                         addChannel={noop}
+                                        draggable={false}
                                     />
                                     {categories.map((category, index) => (
                                         <ListElement
@@ -336,7 +338,11 @@ function ListElement({
     draggable?: boolean;
 }) {
     const [editing, setEditing] = useState<string>();
-    const startEditing = () => setTitle && setEditing(category.title);
+    const startEditing = () => {
+        if (draggable && setTitle) {
+            setEditing(category.title);
+        }
+    };
 
     const save = useCallback(() => {
         setEditing(undefined);
@@ -370,7 +376,10 @@ function ListElement({
                         <div className="inner">
                             <Row>
                                 <KanbanListHeader
-                                    {...provided.dragHandleProps}
+                                    {...(draggable
+                                        ? provided.dragHandleProps
+                                        : {})}
+                                    renamable={draggable}
                                     onClick={startEditing}>
                                     {editing !== undefined ? (
                                         <input
