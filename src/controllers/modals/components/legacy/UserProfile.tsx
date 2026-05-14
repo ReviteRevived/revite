@@ -484,6 +484,51 @@ export const UserProfile = observer(
                                         </div>
                                     </>
                                 ) : undefined}
+                                {member &&
+                                    member.roles &&
+                                    member.roles.length > 0 && (
+                                        <div className={styles.rolesSection}>
+                                            <div className={styles.category}>
+                                                Roles
+                                            </div>
+                                            <div className={styles.roleGrid}>
+                                                {member.roles.map((roleId) => {
+                                                    const role =
+                                                        member.server?.roles?.[
+                                                            roleId
+                                                        ];
+                                                    if (!role) return null;
+                                                    const roleColor =
+                                                        role.colour ||
+                                                        "var(--secondary-foreground)";
+
+                                                    return (
+                                                        <div
+                                                            key={roleId}
+                                                            className={
+                                                                styles.rolePill
+                                                            }>
+                                                            <div
+                                                                className={
+                                                                    styles.roleDot
+                                                                }
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        roleColor,
+                                                                }}
+                                                            />
+                                                            <span
+                                                                className={
+                                                                    styles.roleName
+                                                                }>
+                                                                {role.name}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 <div className={styles.memberSince}>
                                     <div className={styles.category}>
                                         Member Since
