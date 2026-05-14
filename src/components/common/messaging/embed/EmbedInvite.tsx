@@ -180,6 +180,7 @@ const INVITE_PATHS = [
     "nightly.revolt.chat/invite",
     "local.revolt.chat/invite",
     "rvlt.gg",
+    "stt.gg",
 ];
 
 const RE_INVITE = new RegExp(
