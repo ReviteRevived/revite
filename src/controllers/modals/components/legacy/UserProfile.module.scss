@@ -190,3 +190,67 @@
         text-overflow: ellipsis;
     }
 }
+
+.memberSince {
+    margin-bottom: 16px;
+}
+
+.category {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.memberGrid {
+    display: flex;
+    gap: 12px;
+}
+
+.memberItem {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+
+    padding: 10px 12px;
+
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.memberIcon {
+    flex-shrink: 0;
+
+    opacity: 0.45;
+
+    margin-right: 10px;
+}
+
+.memberContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.memberLabel {
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    margin-bottom: 2px;
+}
+
+.memberDate {
+    font-size: 14px;
+    font-weight: 600;
+
+    color: rgba(255, 255, 255, 0.92);
+}

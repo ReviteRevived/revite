@@ -3,6 +3,7 @@ import {
     Envelope,
     Edit,
     UserPlus,
+    CalendarAlt,
     UserX,
     Group,
     InfoCircle,
@@ -12,6 +13,7 @@ import {
 import { observer } from "mobx-react-lite";
 import { Link, useHistory } from "react-router-dom";
 import { UserPermission, API } from "revolt.js";
+import { decodeTime } from "ulid";
 
 import styles from "./UserProfile.module.scss";
 import { Localizer, Text } from "preact-i18n";
@@ -29,6 +31,8 @@ import {
 import { noop } from "../../../../lib/js";
 
 import { useApplicationState } from "../../../../mobx/State";
+
+import { dayjs } from "../../../../context/Locale";
 
 import ChannelIcon from "../../../../components/common/ChannelIcon";
 import ServerIcon from "../../../../components/common/ServerIcon";
@@ -83,6 +87,16 @@ export const UserProfile = observer(
         const mutualServers = mutual?.servers.map((id) =>
             client.servers.get(id),
         );
+
+        const serverIdMatch = window.location.pathname.match(
+            /\/server\/([A-HJKMNP-TV-Z0-9]{26})/,
+        );
+        const currentServerId = serverIdMatch ? serverIdMatch[1] : null;
+        const member = currentServerId
+            ? client.members.get(
+                  JSON.stringify({ server: currentServerId, user: user._id }),
+              )
+            : null;
 
         useLayoutEffect(() => {
             if (!user_id) return;
@@ -470,6 +484,73 @@ export const UserProfile = observer(
                                         </div>
                                     </>
                                 ) : undefined}
+                                <div className={styles.memberSince}>
+                                    <div className={styles.category}>
+                                        Member Since
+                                    </div>
+
+                                    <div className={styles.memberGrid}>
+                                        <div className={styles.memberItem}>
+                                            <CalendarAlt
+                                                size={14}
+                                                className={styles.memberIcon}
+                                            />
+
+                                            <div
+                                                className={
+                                                    styles.memberContent
+                                                }>
+                                                <span
+                                                    className={
+                                                        styles.memberLabel
+                                                    }>
+                                                    Created
+                                                </span>
+
+                                                <span
+                                                    className={
+                                                        styles.memberDate
+                                                    }>
+                                                    {dayjs(
+                                                        decodeTime(user._id),
+                                                    ).format("LL")}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {member && (
+                                            <div className={styles.memberItem}>
+                                                <UserPlus
+                                                    size={14}
+                                                    className={
+                                                        styles.memberIcon
+                                                    }
+                                                />
+
+                                                <div
+                                                    className={
+                                                        styles.memberContent
+                                                    }>
+                                                    <span
+                                                        className={
+                                                            styles.memberLabel
+                                                        }>
+                                                        Joined
+                                                    </span>
+
+                                                    <span
+                                                        className={
+                                                            styles.memberDate
+                                                        }>
+                                                        {dayjs(
+                                                            member.joined_at,
+                                                        ).format("LL")}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                                 {profile?.content && (
                                     <>
                                         <div className={styles.category}>
