@@ -51,12 +51,21 @@ const NoOomfie = styled.div`
 `;
 
 const ItemContent = memo(
-    ({ item, context }: { item: User; context: Channel }) => (
+    ({
+        item,
+        context,
+        isSidebar,
+    }: {
+        item: User;
+        context: Channel;
+        isSidebar?: boolean;
+    }) => (
         <UserButton
             key={item._id}
             user={item}
             margin
             context={context}
+            isSidebar={isSidebar}
             onClick={(e) => {
                 if (e.shiftKey) {
                     internalEmit(
@@ -79,9 +88,11 @@ const ItemContent = memo(
 export default function MemberList({
     entries,
     context,
+    isSidebar,
 }: {
     entries: MemberListGroup[];
     context: Channel;
+    isSidebar?: boolean;
 }) {
     return (
         <GroupedVirtuoso
@@ -144,7 +155,11 @@ export default function MemberList({
 
                 return (
                     <div>
-                        <ItemContent item={item} context={context} />
+                        <ItemContent
+                            item={item}
+                            context={context}
+                            isSidebar={isSidebar}
+                        />
                     </div>
                 );
             }}

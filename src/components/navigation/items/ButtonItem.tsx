@@ -35,6 +35,7 @@ type UserProps = CommonProps & {
     user: User;
     context?: Channel;
     channel?: Channel;
+    isSidebar?: boolean;
 };
 
 // TODO: Gray out blocked names.
@@ -47,6 +48,7 @@ export const UserButton = observer((props: UserProps) => {
         user,
         context,
         channel,
+        isSidebar,
         ...divProps
     } = props;
 
@@ -76,7 +78,11 @@ export const UserButton = observer((props: UserProps) => {
             />
             <div className={styles.name}>
                 <div>
-                    <Username user={user} showServerIdentity />
+                    <Username
+                        user={user}
+                        showServerIdentity
+                        isSidebar={isSidebar}
+                    />
                 </div>
                 {
                     <div className={styles.subText}>
@@ -126,6 +132,7 @@ type ChannelProps = CommonProps & {
     channel: Channel;
     user?: User;
     compact?: boolean;
+    isSidebar?: boolean;
 };
 
 export const ChannelButton = observer((props: ChannelProps) => {
@@ -143,7 +150,17 @@ export const ChannelButton = observer((props: ChannelProps) => {
     if (channel.channel_type === "SavedMessages") throw "Invalid channel type.";
     if (channel.channel_type === "DirectMessage") {
         if (typeof user === "undefined") throw "No user provided.";
-        return <UserButton {...{ active, alert, channel, user }} />;
+        return (
+            <UserButton
+                {...{
+                    active,
+                    alert,
+                    channel,
+                    user,
+                    isSidebar: props.isSidebar,
+                }}
+            />
+        );
     }
 
     const alerting = alert && !muted && !active;

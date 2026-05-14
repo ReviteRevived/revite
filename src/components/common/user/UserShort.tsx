@@ -1,8 +1,9 @@
-import { TimeFive } from "@styled-icons/boxicons-regular";
+import { TimeFive, Spa, Rocket } from "@styled-icons/boxicons-regular";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
 import { User, API } from "revolt.js";
 import styled, { css } from "styled-components/macro";
+import { decodeTime } from "ulid";
 
 import { Ref } from "preact";
 import { Text } from "preact-i18n";
@@ -15,6 +16,40 @@ import { useClient } from "../../../controllers/client/ClientController";
 import { modalController } from "../../../controllers/modals/ModalController";
 import Tooltip from "../Tooltip";
 import UserIcon from "./UserIcon";
+
+const shimmer = css`
+    @keyframes shimmer {
+        0% {
+            background-position: -200% center;
+        }
+        100% {
+            background-position: 200% center;
+        }
+    }
+`;
+
+const FreshMeatBadge = styled.span`
+    ${shimmer}
+    margin-inline-start: 4px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+
+    background: linear-gradient(90deg, #ffd700, #fff5b1, #ffcc00, #ffd700);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+    filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+`;
+
+const NewUserBadge = styled.span`
+    color: var(--accent);
+    margin-inline-start: 4px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+`;
 
 const BotBadge = styled.div`
     display: inline-block;
@@ -38,7 +73,7 @@ type UsernameProps = Omit<
     prefixAt?: boolean;
     masquerade?: API.Masquerade;
     showServerIdentity?: boolean | "both";
-
+    isSidebar?: boolean;
     override?: string;
     innerRef?: Ref<any>;
 };
@@ -64,6 +99,7 @@ export const Username = observer(
         prefixAt,
         masquerade,
         showServerIdentity,
+        isSidebar,
         innerRef,
         override,
         ...otherProps
@@ -73,6 +109,16 @@ export const Username = observer(
             user?.username;
         let color = masquerade?.colour;
         let timed_out: Date | undefined;
+
+        let isFreshMeat = false;
+        let isNew2Server = false;
+
+        if (user?._id) {
+            try {
+                const createdAt = decodeTime(user._id);
+                isFreshMeat = dayjs().diff(createdAt, "day") < 1;
+            } catch (e) {}
+        }
 
         if (override) {
             username = override;
@@ -96,6 +142,11 @@ export const Username = observer(
 
                     if (member.timeout) {
                         timed_out = member.timeout;
+                    }
+
+                    if (member.joined_at) {
+                        isNew2Server =
+                            dayjs().diff(member.joined_at, "day") < 1;
                     }
 
                     if (!color) {
@@ -134,6 +185,21 @@ export const Username = observer(
                         />
                     </Tooltip>
                 )}
+
+                {!isSidebar &&
+                    (isFreshMeat ? (
+                        <Tooltip content="New to Stoat">
+                            <FreshMeatBadge>
+                                <Rocket size={18} />
+                            </FreshMeatBadge>
+                        </Tooltip>
+                    ) : isNew2Server ? (
+                        <Tooltip content="New to the server">
+                            <NewUserBadge>
+                                <Spa size={16} style={{ opacity: 0.7 }} />
+                            </NewUserBadge>
+                        </Tooltip>
+                    ) : null)}
             </>
         );
 
@@ -142,22 +208,13 @@ export const Username = observer(
                 <>
                     {el}
                     <BotBadge>
-                        {masquerade ? (
-                            <Text id="app.main.channel.bridge" />
-                        ) : (
-                            <Text id="app.main.channel.bot" />
-                        )}
-                    </BotBadge>
-                </>
-            );
-        }
-
-        if (override) {
-            return (
-                <>
-                    {el}
-                    <BotBadge>
-                        <Text id="app.main.channel.bot" />
+                        <Text
+                            id={
+                                masquerade
+                                    ? "app.main.channel.bridge"
+                                    : "app.main.channel.bot"
+                            }
+                        />
                     </BotBadge>
                 </>
             );
@@ -173,12 +230,14 @@ export default function UserShort({
     prefixAt,
     masquerade,
     showServerIdentity,
+    isSidebar,
 }: {
     user?: User;
     size?: number;
     prefixAt?: boolean;
     masquerade?: API.Masquerade;
     showServerIdentity?: boolean;
+    isSidebar?: boolean;
 }) {
     const openProfile = () =>
         user &&
@@ -208,6 +267,7 @@ export default function UserShort({
                 masquerade={masquerade}
                 onClick={handleUserClick}
                 showServerIdentity={showServerIdentity}
+                isSidebar={isSidebar}
             />
         </>
     );
