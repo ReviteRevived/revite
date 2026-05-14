@@ -40,6 +40,7 @@ export default class Session {
     state: State = window.navigator.onLine ? "Ready" : "Offline";
     user_id: string | null = null;
     client: Client | null = null;
+    retryCount = 0;
 
     /**
      * Create a new Session
@@ -212,22 +213,28 @@ export default class Session {
             case "SUCCESS": {
                 this.assert("Connecting");
                 this.state = "Online";
+                this.retryCount = 0;
                 break;
             }
             // Client got disconnected
             case "DISCONNECT": {
                 if (navigator.onLine) {
-                    this.assert("Online");
+                    this.assert("Online", "Connecting", "Ready");
                     this.state = "Disconnected";
 
+                    const delay = Math.min(
+                        1000 * Math.pow(2, this.retryCount),
+                        30000,
+                    );
                     setTimeout(() => {
                         // Check we are still disconnected before retrying.
                         if (this.state === "Disconnected") {
+                            this.retryCount++;
                             this.emit({
                                 action: "RETRY",
                             });
                         }
-                    }, 1000);
+                    }, delay);
                 }
 
                 break;
