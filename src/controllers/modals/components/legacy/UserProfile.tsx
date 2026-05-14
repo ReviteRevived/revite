@@ -492,40 +492,45 @@ export const UserProfile = observer(
                                                 Roles
                                             </div>
                                             <div className={styles.roleGrid}>
-                                                {member.roles.map((roleId) => {
-                                                    const role =
-                                                        member.server?.roles?.[
-                                                            roleId
-                                                        ];
-                                                    if (!role) return null;
-                                                    const roleColor =
-                                                        role.colour ||
-                                                        "var(--secondary-foreground)";
+                                                {(
+                                                    member.server
+                                                        ?.orderedRoles ?? []
+                                                )
+                                                    .filter((role) =>
+                                                        member.roles?.includes(
+                                                            role.id,
+                                                        ),
+                                                    )
+                                                    .map((role) => {
+                                                        const roleStyle = {
+                                                            background:
+                                                                role.colour ||
+                                                                "var(--secondary-foreground)",
+                                                        };
 
-                                                    return (
-                                                        <div
-                                                            key={roleId}
-                                                            className={
-                                                                styles.rolePill
-                                                            }>
+                                                        return (
                                                             <div
+                                                                key={role.id}
                                                                 className={
-                                                                    styles.roleDot
-                                                                }
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        roleColor,
-                                                                }}
-                                                            />
-                                                            <span
-                                                                className={
-                                                                    styles.roleName
+                                                                    styles.rolePill
                                                                 }>
-                                                                {role.name}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
+                                                                <div
+                                                                    className={
+                                                                        styles.roleDot
+                                                                    }
+                                                                    style={
+                                                                        roleStyle
+                                                                    }
+                                                                />
+                                                                <span
+                                                                    className={
+                                                                        styles.roleName
+                                                                    }>
+                                                                    {role.name}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
                                             </div>
                                         </div>
                                     )}
