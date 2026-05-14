@@ -87,13 +87,17 @@ const Row = styled.div`
     }
 `;
 
-const KanbanListHeader = styled.div<{ renamable?: boolean }>`
+const KanbanListHeader = styled.div<{
+    renamable?: boolean;
+    touchy?: boolean;
+}>`
     height: 34px;
     display: grid;
     min-width: 34px;
     place-items: center;
     transition: 0.2s ease background-color;
-    cursor: ${(props) => (props.renamable ? "pointer" : "default")} !important;
+    cursor: ${(props) =>
+        props.renamable || props.touchy ? "pointer" : "default"};
 
     > * {
         font: var(--font);
@@ -455,6 +459,7 @@ function ListElement({
                                 )}
                             </Droppable>
                             <KanbanListHeader
+                                touchy
                                 onClick={() =>
                                     modalController.push({
                                         type: "create_channel",
