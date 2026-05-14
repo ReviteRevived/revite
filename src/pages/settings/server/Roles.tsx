@@ -1,10 +1,7 @@
-import {
-    HelpCircle,
-    ChevronUp,
-    ChevronDown,
-} from "@styled-icons/boxicons-solid";
+import { HelpCircle, GridAlt } from "@styled-icons/boxicons-solid";
 import isEqual from "lodash.isequal";
 import { observer } from "mobx-react-lite";
+import { DragDropContext } from "react-beautiful-dnd";
 import { Server } from "revolt.js";
 import styled from "styled-components";
 
@@ -22,6 +19,8 @@ import {
     Category,
     Row,
 } from "@revoltchat/ui";
+
+import { Draggable, Droppable } from "../../../lib/dnd";
 
 import Tooltip from "../../../components/common/Tooltip";
 import { PermissionList } from "../../../components/settings/roles/PermissionList";
@@ -62,14 +61,12 @@ const RoleRank = styled.div`
     color: var(--secondary-foreground);
 `;
 
-const RoleControls = styled.div`
+const DragHandle = styled.div`
     display: flex;
-    gap: 4px;
-`;
-
-const MoveButton = styled(Button)`
-    padding: 4px 8px;
-    min-width: auto;
+    align-items: center;
+    padding-right: 12px;
+    color: var(--tertiary-foreground);
+    cursor: grab;
 `;
 
 /**
@@ -105,27 +102,20 @@ const RoleReorderPanel = observer(
             setRoles(useRolesForReorder(server));
         }, [server.roles, server.default_permissions]);
 
-        const moveRoleUp = (index: number) => {
-            if (index === 0 || roles[index].id === "default") return;
+        const onDragEnd = (result: any) => {
+            const { destination, source } = result;
+            if (!destination || destination.index === source.index) return;
 
-            const newRoles = [...roles];
-            [newRoles[index - 1], newRoles[index]] = [
-                newRoles[index],
-                newRoles[index - 1],
-            ];
-            setRoles(newRoles);
-        };
-
-        const moveRoleDown = (index: number) => {
-            // Can't move down if it's the last non-default role or if it's default
-            if (index >= roles.length - 2 || roles[index].id === "default")
+            if (
+                roles[source.index].id === "default" ||
+                roles[destination.index].id === "default"
+            ) {
                 return;
+            }
 
             const newRoles = [...roles];
-            [newRoles[index], newRoles[index + 1]] = [
-                newRoles[index + 1],
-                newRoles[index],
-            ];
+            const [removed] = newRoles.splice(source.index, 1);
+            newRoles.splice(destination.index, 0, removed);
             setRoles(newRoles);
         };
 
@@ -181,42 +171,62 @@ const RoleReorderPanel = observer(
                     </Row>
                 </SpaceBetween>
 
-                <RoleReorderContainer>
-                    {roles.map((role, index) => (
-                        <RoleItem key={role.id}>
-                            <RoleInfo>
-                                <RoleName>{role.name}</RoleName>
-                                <RoleRank>
-                                    {role.id === "default" ? (
-                                        <Text id="app.settings.permissions.default_desc" />
-                                    ) : (
-                                        <>
-                                            <Text id="app.settings.permissions.role_ranking" />{" "}
-                                            {index}
-                                        </>
-                                    )}
-                                </RoleRank>
-                            </RoleInfo>
-
-                            {role.id !== "default" && (
-                                <RoleControls>
-                                    <MoveButton
-                                        palette="secondary"
-                                        disabled={index === 0}
-                                        onClick={() => moveRoleUp(index)}>
-                                        <ChevronUp size={16} />
-                                    </MoveButton>
-                                    <MoveButton
-                                        palette="secondary"
-                                        disabled={index >= roles.length - 2}
-                                        onClick={() => moveRoleDown(index)}>
-                                        <ChevronDown size={16} />
-                                    </MoveButton>
-                                </RoleControls>
-                            )}
-                        </RoleItem>
-                    ))}
-                </RoleReorderContainer>
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="role-list">
+                        {(provided) => (
+                            <div
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}>
+                                <RoleReorderContainer>
+                                    {roles.map((role, index) => (
+                                        <Draggable
+                                            key={role.id}
+                                            draggableId={role.id}
+                                            index={index}
+                                            isDragDisabled={
+                                                role.id === "default"
+                                            }>
+                                            {(provided) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}>
+                                                    <RoleItem>
+                                                        {role.id !==
+                                                            "default" && (
+                                                            <DragHandle
+                                                                {...provided.dragHandleProps}>
+                                                                <GridAlt
+                                                                    size={20}
+                                                                />
+                                                            </DragHandle>
+                                                        )}
+                                                        <RoleInfo>
+                                                            <RoleName>
+                                                                {role.name}
+                                                            </RoleName>
+                                                            <RoleRank>
+                                                                {role.id ===
+                                                                "default" ? (
+                                                                    <Text id="app.settings.permissions.default_desc" />
+                                                                ) : (
+                                                                    <>
+                                                                        <Text id="app.settings.permissions.role_ranking" />{" "}
+                                                                        {index}
+                                                                    </>
+                                                                )}
+                                                            </RoleRank>
+                                                        </RoleInfo>
+                                                    </RoleItem>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                </RoleReorderContainer>
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             </div>
         );
     },
