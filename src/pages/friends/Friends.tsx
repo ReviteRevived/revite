@@ -6,7 +6,7 @@ import { User } from "revolt.js";
 import styles from "./Friend.module.scss";
 import classNames from "classnames";
 import { Text } from "preact-i18n";
-import { useState } from "preact/hooks";
+import { useState, useMemo } from "preact/hooks";
 
 import { IconButton, InputBox } from "@revoltchat/ui";
 
@@ -68,10 +68,18 @@ export default observer(() => {
     ] as [string, User[], string][];
 
     const incoming = lists[0][1];
-    const userlist: Children[] = incoming.map((x) => (
-        <b key={x._id}>{x.username}</b>
-    ));
-    for (let i = incoming.length - 1; i > 0; i--) userlist.splice(i, 0, ", ");
+
+    const randomizePendingCauseItLooksCool = useMemo(() => {
+        return [...incoming].sort(() => Math.random() - 0.5);
+    }, [incoming.length]);
+
+    const randomUserList = useMemo(() => {
+        const list: any[] = randomizePendingCauseItLooksCool.map((x) => (
+            <b key={x._id}>{x.username}</b>
+        ));
+        for (let i = list.length - 1; i > 0; i--) list.splice(i, 0, ", ");
+        return list;
+    }, [randomizePendingCauseItLooksCool]);
 
     const isEmpty = lists.reduce((p: number, n) => p + n.length, 0) === 0;
     return (
@@ -156,24 +164,25 @@ export default observer(() => {
                                 })
                             }>
                             <div className={styles.avatars}>
-                                {incoming.map(
-                                    (x, i) =>
-                                        i < 3 && (
-                                            <UserIcon
-                                                target={x}
-                                                size={64}
-                                                mask={
-                                                    i <
-                                                    Math.min(
-                                                        incoming.length - 1,
-                                                        2,
-                                                    )
-                                                        ? "url(#overlap)"
-                                                        : undefined
-                                                }
-                                            />
-                                        ),
-                                )}
+                                {randomizePendingCauseItLooksCool
+                                    .slice(0, 3)
+                                    .map((x, i) => (
+                                        <UserIcon
+                                            key={x._id}
+                                            target={x}
+                                            size={64}
+                                            mask={
+                                                i <
+                                                Math.min(
+                                                    randomizePendingCauseItLooksCool.length -
+                                                        1,
+                                                    2,
+                                                )
+                                                    ? "url(#overlap)"
+                                                    : undefined
+                                            }
+                                        />
+                                    ))}
                             </div>
                             <div className={styles.details}>
                                 <div>
@@ -185,7 +194,10 @@ export default observer(() => {
                                         <TextReact
                                             id="app.special.friends.from.several"
                                             fields={{
-                                                userlist: userlist.slice(0, 6),
+                                                userlist: randomUserList.slice(
+                                                    0,
+                                                    5,
+                                                ),
                                                 count: incoming.length - 3,
                                             }}
                                         />
@@ -193,14 +205,15 @@ export default observer(() => {
                                         <TextReact
                                             id="app.special.friends.from.multiple"
                                             fields={{
-                                                user: userlist.shift()!,
-                                                userlist: userlist.slice(1),
+                                                user: randomUserList[0],
+                                                userlist:
+                                                    randomUserList.slice(2),
                                             }}
                                         />
                                     ) : (
                                         <TextReact
                                             id="app.special.friends.from.single"
-                                            fields={{ user: userlist[0] }}
+                                            fields={{ user: randomUserList[0] }}
                                         />
                                     )}
                                 </span>
