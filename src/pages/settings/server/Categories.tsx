@@ -153,7 +153,7 @@ export const Categories = observer(({ server }: Props) => {
 
     const defaultCategory = useMemo(() => {
         return {
-            title: "Default",
+            title: "Uncategorized",
             channels: [...server.channels]
                 .filter((x) => x)
                 .map((x) => x!._id)
