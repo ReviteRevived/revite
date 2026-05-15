@@ -1,11 +1,14 @@
-import { ChevronDown } from "@styled-icons/boxicons-regular";
+import { ChevronDown, Filter, Search } from "@styled-icons/boxicons-regular";
+import { CalendarAlt, UserPlus } from "@styled-icons/boxicons-solid";
+import dayJS from "dayjs";
 import { isEqual } from "lodash";
 import { observer } from "mobx-react-lite";
 import { Virtuoso } from "react-virtuoso";
-import { Member } from "revolt.js";
-import { Server } from "revolt.js";
+import { Member, Server } from "revolt.js";
+import { decodeTime } from "ulid";
 
 import styles from "./Panes.module.scss";
+import classNames from "classnames";
 import { Text } from "preact-i18n";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
@@ -18,6 +21,7 @@ import {
     Preloader,
 } from "@revoltchat/ui";
 
+import { normalize } from "../../../components/common/Reuseables";
 import UserIcon from "../../../components/common/user/UserIcon";
 import { Username } from "../../../components/common/user/UserShort";
 
@@ -33,10 +37,11 @@ const Inner = observer(({ member }: InnerProps) => {
         setRoles(member.roles ?? []);
     }, [member.roles]);
 
-    const server_roles = member.server?.roles ?? {};
     const user = member.user;
+    const orderedRoles = member.server?.orderedRoles ?? [];
+
     return (
-        <>
+        <div className={styles.memberWrapper}>
             <div
                 className={styles.member}
                 data-open={open}
@@ -51,56 +56,103 @@ const Inner = observer(({ member }: InnerProps) => {
             </div>
             {open && (
                 <div className={styles.memberView}>
-                    <Category>Roles</Category>
-                    {Object.keys(server_roles).map((key) => {
-                        const role = server_roles[key];
-                        return (
-                            <Checkbox
-                                key={key}
-                                value={roles.includes(key) ?? false}
-                                title={
-                                    <span
-                                        style={{
-                                            color: role.colour!,
-                                        }}>
-                                        {role.name}
+                    <div className={styles.memberSince}>
+                        <Category>Member Since</Category>
+                        <div className={styles.memberGrid}>
+                            <div className={styles.memberItem}>
+                                <CalendarAlt
+                                    size={14}
+                                    className={styles.memberIcon}
+                                />
+                                <div className={styles.memberContent}>
+                                    <span className={styles.memberLabel}>
+                                        Created
                                     </span>
-                                }
-                                onChange={(v) => {
-                                    if (v) {
-                                        setRoles([...roles, key]);
-                                    } else {
-                                        setRoles(
-                                            roles.filter((x) => x !== key),
-                                        );
+                                    <span className={styles.memberDate}>
+                                        {user
+                                            ? dayJS(
+                                                  decodeTime(user._id),
+                                              ).format("LL")
+                                            : "Unknown"}
+                                    </span>
+                                </div>
+                            </div>
+                            {member.joined_at && (
+                                <div className={styles.memberItem}>
+                                    <UserPlus
+                                        size={14}
+                                        className={styles.memberIcon}
+                                    />
+                                    <div className={styles.memberContent}>
+                                        <span className={styles.memberLabel}>
+                                            Joined
+                                        </span>
+                                        <span className={styles.memberDate}>
+                                            {dayJS(member.joined_at).format(
+                                                "LL",
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: "12px" }}>
+                        <Category>Edit Member Roles</Category>
+                        <div className={styles.rolesEditGrid}>
+                            {orderedRoles.map((role) => (
+                                <Checkbox
+                                    key={role.id}
+                                    value={roles.includes(role.id)}
+                                    title={
+                                        <div className={styles.rolePill}>
+                                            <div
+                                                className={styles.roleDot}
+                                                style={{
+                                                    background:
+                                                        role.colour ||
+                                                        "var(--secondary-foreground)",
+                                                }}
+                                            />
+                                            <span className={styles.roleName}>
+                                                {role.name}
+                                            </span>
+                                        </div>
                                     }
-                                }}
-                            />
-                        );
-                    })}
+                                    onChange={(v) =>
+                                        v
+                                            ? setRoles([...roles, role.id])
+                                            : setRoles(
+                                                  roles.filter(
+                                                      (x) => x !== role.id,
+                                                  ),
+                                              )
+                                    }
+                                />
+                            ))}
+                        </div>
+                    </div>
+
                     <Button
                         palette="secondary"
+                        style={{ marginTop: "12px", width: "100%" }}
                         disabled={isEqual(member.roles ?? [], roles)}
-                        onClick={() =>
-                            member.edit({
-                                roles,
-                            })
-                        }>
+                        onClick={() => member.edit({ roles })}>
                         <Text id="app.special.modals.actions.save" />
                     </Button>
                 </div>
             )}
-        </>
+        </div>
     );
 });
 
-interface Props {
-    server: Server;
-}
-
-export const Members = ({ server }: Props) => {
+export const Members = observer(({ server }: { server: Server }) => {
     const [data, setData] = useState<Member[] | undefined>(undefined);
     const [query, setQuery] = useState("");
+    const [roleQuery, setRoleQuery] = useState("");
+    const [filterRoles, setFilterRoles] = useState<string[]>([]);
+    const [filterOpen, setFilterOpen] = useState(false);
 
     useEffect(() => {
         function fetch() {
@@ -142,17 +194,29 @@ export const Members = ({ server }: Props) => {
         };
     }, [server, setData]);
 
-    const members = useMemo(
-        () =>
-            query
-                ? data?.filter((x) =>
-                      x.user?.username
-                          .toLowerCase()
-                          .includes(query.toLowerCase()),
-                  )
-                : data,
-        [data, query],
-    );
+    const orderedRoles = server.orderedRoles ?? [];
+
+    const visibleRoles = useMemo(() => {
+        if (!roleQuery) return orderedRoles;
+        const normalizedRoleQuery = normalize(roleQuery);
+        return orderedRoles.filter((r) =>
+            normalize(r.name).includes(normalizedRoleQuery),
+        );
+    }, [orderedRoles, roleQuery]);
+
+    const filteredMembers = useMemo(() => {
+        if (!data) return [];
+        const normalizedQuery = normalize(query);
+        return data.filter((m) => {
+            const matchesQuery = normalize(m.user?.username ?? "").includes(
+                normalizedQuery,
+            );
+            const matchesRoles =
+                filterRoles.length === 0 ||
+                filterRoles.every((id) => m.roles?.includes(id));
+            return matchesQuery && matchesRoles;
+        });
+    }, [data, query, filterRoles]);
 
     return (
         <div className={styles.userList}>
@@ -162,19 +226,113 @@ export const Members = ({ server }: Props) => {
                 onChange={(e) => setQuery(e.currentTarget.value)}
                 palette="secondary"
             />
-            <div className={styles.subtitle}>{data?.length ?? 0} Members</div>
-            {members ? (
-                <div className={styles.virtual}>
+
+            <div className={styles.filterSection} style={{ marginTop: "16px" }}>
+                <div
+                    className={styles.filterHeaderRow}
+                    onClick={() => setFilterOpen(!filterOpen)}
+                    style={{
+                        cursor: "pointer",
+                        paddingBottom: filterOpen ? "12px" : "0px",
+                    }}>
+                    <Category>
+                        <Filter size={12} /> Filter by Role
+                    </Category>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                        }}>
+                        {filterRoles.length > 0 && (
+                            <small
+                                className={styles.clearFilter}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFilterRoles([]);
+                                }}>
+                                Clear
+                            </small>
+                        )}
+                        <IconButton
+                            className={classNames(styles.chevron, {
+                                [styles.open]: filterOpen,
+                            })}>
+                            <ChevronDown size={18} />
+                        </IconButton>
+                    </div>
+                </div>
+                {filterOpen && (
+                    <>
+                        <div
+                            className={styles.roleSearchWrapper}
+                            style={{ marginBottom: "12px" }}>
+                            <InputBox
+                                placeholder="Search roles..."
+                                value={roleQuery}
+                                onChange={(e) =>
+                                    setRoleQuery(e.currentTarget.value)
+                                }
+                                palette="secondary"
+                            />
+                        </div>
+                        <div className={styles.filterGrid}>
+                            {visibleRoles.map((role) => (
+                                <div
+                                    key={role.id}
+                                    className={classNames(styles.filterRow, {
+                                        [styles.active]: filterRoles.includes(
+                                            role.id,
+                                        ),
+                                    })}
+                                    onClick={() =>
+                                        setFilterRoles((prev) =>
+                                            prev.includes(role.id)
+                                                ? prev.filter(
+                                                      (x) => x !== role.id,
+                                                  )
+                                                : [...prev, role.id],
+                                        )
+                                    }>
+                                    <div
+                                        className={styles.roleDot}
+                                        style={{
+                                            background:
+                                                role.colour ||
+                                                "var(--secondary-foreground)",
+                                        }}
+                                    />
+                                    <span className={styles.roleName}>
+                                        {role.name}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <hr className={styles.divider} style={{ margin: "20px 0" }} />
+
+            <div className={styles.subtitle}>
+                <span>
+                    {filteredMembers.length} / {data?.length ?? 0} Members
+                </span>
+            </div>
+
+            <div className={styles.virtual}>
+                {data ? (
                     <Virtuoso
-                        totalCount={members.length}
+                        style={{ height: "100%" }}
+                        totalCount={filteredMembers.length}
                         itemContent={(index) => (
-                            <Inner member={members[index]} />
+                            <Inner member={filteredMembers[index]} />
                         )}
                     />
-                </div>
-            ) : (
-                <Preloader type="ring" />
-            )}
+                ) : (
+                    <Preloader type="ring" />
+                )}
+            </div>
         </div>
     );
-};
+});
