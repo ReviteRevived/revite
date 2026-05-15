@@ -25,6 +25,8 @@ interface Props {
         title: Children;
         hidden?: boolean;
         hideTitle?: boolean;
+        palette?: "error";
+        action?: () => void;
     }[];
     custom?: Children;
     children: Children;
@@ -144,7 +146,17 @@ export function GenericSettings({
                                                     !isTouchscreenDevice &&
                                                     typeof page === "undefined")
                                             }
-                                            onClick={() => switchPage(entry.id)}
+                                            onClick={() => {
+                                                if (entry.action) {
+                                                    entry.action();
+                                                } else {
+                                                    switchPage(entry.id);
+                                                }
+                                            }}
+                                            className={classNames({
+                                                [styles.errorItem]:
+                                                    entry.palette === "error",
+                                            })}
                                             compact>
                                             {entry.icon} {entry.title}
                                         </ButtonItem>

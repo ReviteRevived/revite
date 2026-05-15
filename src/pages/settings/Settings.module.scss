@@ -312,3 +312,11 @@
         overflow-y: auto;
     }
 }
+
+.errorItem {
+    color: var(--error) !important;
+
+    svg {
+        fill: var(--error);
+    }
+}
