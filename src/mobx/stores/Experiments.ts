@@ -10,7 +10,7 @@ import Store from "../interfaces/Store";
 /**
  * Union type of available experiments.
  */
-export type Experiment = "dummy" | "offline_users" | "plugins" | "admin_beta";
+export type Experiment = "dummy" | "offline_users" | "admin_beta";
 
 /**
  * Currently active experiments.
@@ -18,7 +18,7 @@ export type Experiment = "dummy" | "offline_users" | "plugins" | "admin_beta";
 export const AVAILABLE_EXPERIMENTS: Experiment[] = [
     "dummy",
     "offline_users",
-    "plugins",
+    //"plugins",
     "admin_beta",
 ];
 
@@ -37,11 +37,11 @@ export const EXPERIMENTS: {
         description:
             "If you can take the performance hit - for example, if you're on desktop - you can re-enable offline users for big servers such as the Revolt Lounge.",
     },
-    plugins: {
+    /*plugins: {
         title: "Experimental Plugin API",
         description:
             "This will enable the experimental plugin API. Only touch this if you know what you're doing.",
-    },
+    },*/
     admin_beta: {
         title: "Admin Panel Shortcuts",
         description:

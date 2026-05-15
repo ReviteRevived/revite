@@ -172,7 +172,7 @@ export default observer(() => {
                     id: "plugins",
                     icon: <Plug size={20} />,
                     title: <Text id="app.settings.pages.plugins.title" />,
-                    hidden: !experiments.isEnabled("plugins"),
+                    // hidden: !experiments.isEnabled("plugins"),
                 },
                 {
                     id: "notifications",
