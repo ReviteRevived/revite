@@ -1,11 +1,14 @@
+import { Group } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { Redirect, useParams } from "react-router";
+import { Link } from "react-router-dom";
 import styled, { css } from "styled-components/macro";
 
 import { useTriggerEvents } from "preact-context-menu";
+import { Text } from "preact-i18n";
 import { useEffect } from "preact/hooks";
 
-import { Category } from "@revoltchat/ui";
+import { Category, LineDivider } from "@revoltchat/ui";
 
 import ConditionalLink from "../../../lib/ConditionalLink";
 import PaintCounter from "../../../lib/PaintCounter";
@@ -17,7 +20,7 @@ import { useApplicationState } from "../../../mobx/State";
 import { useClient } from "../../../controllers/client/ClientController";
 import CollapsibleSection from "../../common/CollapsibleSection";
 import ServerHeader from "../../common/ServerHeader";
-import { ChannelButton } from "../items/ButtonItem";
+import ButtonItem, { ChannelButton } from "../items/ButtonItem";
 import ConnectionStatus from "../items/ConnectionStatus";
 
 const ServerBase = styled.div`
@@ -47,6 +50,13 @@ const ServerList = styled.div`
     }
 `;
 
+const NavItem = styled(Link)`
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    margin-bottom: 8px;
+`;
+
 export default observer(() => {
     const client = useClient();
     const state = useApplicationState();
@@ -59,6 +69,7 @@ export default observer(() => {
     if (!server) return <Redirect to="/" />;
 
     const channel = channel_id ? client.channels.get(channel_id) : undefined;
+    const canManage = server.havePermission("ManageServer");
 
     // ! FIXME: move this globally
     // Track which channel the user was last on.
@@ -153,6 +164,35 @@ export default observer(() => {
                 {...useTriggerEvents("Menu", {
                     server_list: server._id,
                 })}>
+                {canManage && (
+                    <>
+                        <NavItem
+                            to={`/server/${server._id}/settings/members`}
+                            style={{ marginBottom: "2px" }}>
+                            <ButtonItem
+                                compact
+                                style={{
+                                    gap: "12px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    paddingLeft: "8px",
+                                    height: "32px",
+                                }}>
+                                <Group size={20} style={{ opacity: 0.6 }} />
+                                <span
+                                    style={{
+                                        fontWeight: 500,
+                                        fontSize: "0.95rem",
+                                        opacity: 0.8,
+                                    }}>
+                                    <Text id="app.settings.server_pages.members.title" />
+                                </span>
+                            </ButtonItem>
+                        </NavItem>
+                        <LineDivider />
+                    </>
+                )}
+
                 {elements}
             </ServerList>
             <PaintCounter small />
