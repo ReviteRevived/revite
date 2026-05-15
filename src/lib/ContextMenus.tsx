@@ -1023,10 +1023,16 @@ export default function ContextMenus() {
                                         serverPermissions &
                                         Permission.ManageChannel
                                     )
-                                        generateAction({
-                                            action: "delete_channel",
-                                            target: channel,
-                                        });
+                                        generateAction(
+                                            {
+                                                action: "delete_channel",
+                                                target: channel,
+                                            },
+                                            "delete_channel",
+                                            undefined,
+                                            undefined,
+                                            "var(--error)",
+                                        );
 
                                     break;
                             }
