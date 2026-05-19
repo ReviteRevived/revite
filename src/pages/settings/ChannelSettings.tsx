@@ -1,4 +1,5 @@
-import { ListUl, Trash } from "@styled-icons/boxicons-regular";
+/* eslint-disable react/jsx-no-literals */
+import { ListUl, Trash, Plug, Link } from "@styled-icons/boxicons-regular";
 import { InfoCircle } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { Route, Switch, useHistory, useParams } from "react-router-dom";
@@ -10,6 +11,7 @@ import { useClient } from "../../controllers/client/ClientController";
 import { ChannelName } from "../../controllers/client/jsx/ChannelName";
 import { modalController } from "../../controllers/modals/ModalController";
 import { GenericSettings } from "./GenericSettings";
+import { ChannelInvites } from "./channel/ChannelInvites";
 import Overview from "./channel/Overview";
 import Permissions from "./channel/Permissions";
 
@@ -74,6 +76,11 @@ export default observer(() => {
                     title: (
                         <Text id="app.settings.channel_pages.permissions.title" />
                     ),
+                },
+                {
+                    id: "invites",
+                    icon: <Link size={20} />,
+                    title: "Invites",
                     divider: true,
                 },
                 ...(canDelete
@@ -106,6 +113,12 @@ export default observer(() => {
                         <Permissions channel={channel} />
                     </Route>
 
+                    <Route path="/server/:server/channel/:channel/settings/invites">
+                        <ChannelInvites channel={channel} />
+                    </Route>
+                    <Route path="/channel/:channel/settings/invites">
+                        <ChannelInvites channel={channel} />
+                    </Route>
                     <Route>
                         <Overview channel={channel} />
                     </Route>

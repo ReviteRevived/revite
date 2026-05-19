@@ -2,30 +2,27 @@
 import { Copy, Trash } from "@styled-icons/boxicons-regular";
 import { observer } from "mobx-react-lite";
 import { Virtuoso } from "react-virtuoso";
-import { API, Server } from "revolt.js";
+import { API, Channel } from "revolt.js";
 
-import styles from "./Panes.module.scss";
+import styles from "../server/Panes.module.scss";
 import { Text } from "preact-i18n";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
-import { IconButton, InputBox, Preloader } from "@revoltchat/ui";
+import { Button, IconButton, InputBox, Preloader } from "@revoltchat/ui";
 
 import { normalize } from "../../../components/common/Reuseables";
 import UserShort from "../../../components/common/user/UserShort";
-import { ChannelName } from "../../../controllers/client/jsx/ChannelName";
 import { modalController } from "../../../controllers/modals/ModalController";
 
 interface InnerProps {
     invite: API.Invite;
-    server: Server;
+    channel: Channel;
     removeSelf: () => void;
 }
 
-const Inner = observer(({ invite, server, removeSelf }: InnerProps) => {
+const Inner = observer(({ invite, channel, removeSelf }: InnerProps) => {
     const [deleting, setDelete] = useState(false);
-
-    const user = server.client.users.get(invite.creator);
-    const channel = server.client.channels.get(invite.channel);
+    const user = channel.client.users.get(invite.creator);
 
     const copyCode = (e: MouseEvent) => {
         e.preventDefault();
@@ -51,13 +48,10 @@ const Inner = observer(({ invite, server, removeSelf }: InnerProps) => {
             <span>
                 <UserShort user={user} size={24} showServerIdentity={true} />
             </span>
-            <span>
-                <ChannelName channel={channel} prefix />
-            </span>
             <IconButton
                 onClick={() => {
                     setDelete(true);
-                    server.client.deleteInvite(invite._id).then(removeSelf);
+                    channel.client.deleteInvite(invite._id).then(removeSelf);
                 }}>
                 <Trash size={24} color={"var(--error)"} />
             </IconButton>
@@ -66,16 +60,27 @@ const Inner = observer(({ invite, server, removeSelf }: InnerProps) => {
 });
 
 interface Props {
-    server: Server;
+    channel: Channel;
 }
 
-export const Invites = observer(({ server }: Props) => {
+export const ChannelInvites = observer(({ channel }: Props) => {
     const [invites, setInvites] = useState<API.Invite[] | undefined>(undefined);
     const [search, setSearch] = useState("");
 
+    const server = channel.server;
+
     useEffect(() => {
-        server.fetchInvites().then((v) => setInvites(v));
-    }, [server, setInvites]);
+        if (server) {
+            server.fetchInvites().then((allInvites) => {
+                const channelSpecific = allInvites.filter(
+                    (invite) => invite.channel === channel._id,
+                );
+                setInvites(channelSpecific);
+            });
+        } else {
+            setInvites([]);
+        }
+    }, [server, channel._id]);
 
     const filteredInvites = useMemo(() => {
         if (!invites) return [];
@@ -83,16 +88,21 @@ export const Invites = observer(({ server }: Props) => {
 
         const q = normalize(search);
         return invites.filter((invite) => {
-            const user = server.client.users.get(invite.creator);
-            const channel = server.client.channels.get(invite.channel);
+            const user = channel.client.users.get(invite.creator);
 
             return (
                 normalize(invite._id).includes(q) ||
-                (user && normalize(user.username).includes(q)) ||
-                (channel && channel.name && normalize(channel.name).includes(q))
+                (user && normalize(user.username).includes(q))
             );
         });
-    }, [invites, search, server.client.users, server.client.channels]);
+    }, [invites, search, channel.client.users]);
+
+    function openInviteModal() {
+        modalController.push({
+            type: "create_invite",
+            target: channel,
+        });
+    }
 
     return (
         <div className={styles.userList}>
@@ -105,26 +115,14 @@ export const Invites = observer(({ server }: Props) => {
                 }}>
                 <div style={{ flexGrow: 1 }}>
                     <InputBox
-                        placeholder="Search invites..."
+                        placeholder="Search channel invites..."
                         value={search}
                         onInput={(e) => setSearch(e.currentTarget.value)}
                     />
                 </div>
-                <button
-                    onClick={() => {
-                        // @ts-expect-error this does fucking exist, stop telling me it doesn't.
-                        const targetChannel = server.defaultChannel;
-                        if (targetChannel) {
-                            modalController.push({
-                                type: "create_invite",
-                                target: targetChannel,
-                            });
-                        } else {
-                            console.error(
-                                "Could not find a valid target channel for this server's invite.",
-                            );
-                        }
-                    }}
+                <Button
+                    onClick={openInviteModal}
+                    palette="primary"
                     style={{
                         padding: "0 16px",
                         height: "38px",
@@ -137,7 +135,7 @@ export const Invites = observer(({ server }: Props) => {
                         whiteSpace: "nowrap",
                     }}>
                     <Text id="app.context_menu.create_invite" />
-                </button>
+                </Button>
             </div>
 
             <div className={styles.subtitle}>
@@ -146,9 +144,6 @@ export const Invites = observer(({ server }: Props) => {
                 </span>
                 <span>
                     <Text id="app.settings.server_pages.invites.invitor" />
-                </span>
-                <span>
-                    <Text id="app.settings.server_pages.invites.channel" />
                 </span>
                 <span>
                     <Text id="app.settings.server_pages.invites.revoke" />
@@ -182,7 +177,7 @@ export const Invites = observer(({ server }: Props) => {
                                     <Inner
                                         key={invite._id}
                                         invite={invite}
-                                        server={server}
+                                        channel={channel}
                                         removeSelf={() =>
                                             setInvites(
                                                 invites.filter(
