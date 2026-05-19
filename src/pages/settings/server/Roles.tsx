@@ -296,6 +296,64 @@ export const Roles = observer(({ server }: Props) => {
         );
     }
 
+    const [allEdits, setAllEdits] = useState<
+        Record<string, Partial<RoleOrDefault>>
+    >({});
+    const [isSaving, setIsSaving] = useState(false);
+
+    async function saveAllChanges() {
+        setIsSaving(true);
+        try {
+            for (const [roleId, roleEdits] of Object.entries(allEdits)) {
+                const baseRole = currentRoles.find((x) => x.id === roleId);
+                if (!baseRole) continue;
+
+                const mergedRole = { ...baseRole, ...roleEdits };
+                const { permissions: permsCurrent, ...currentAttributes } =
+                    baseRole;
+                const { permissions: permsValue, ...newAttributes } =
+                    mergedRole;
+
+                if (!isEqual(permsCurrent, permsValue)) {
+                    await server.setPermissions(
+                        roleId,
+                        typeof permsValue === "number"
+                            ? permsValue
+                            : { allow: permsValue.a, deny: permsValue.d },
+                    );
+                }
+
+                if (!isEqual(currentAttributes, newAttributes)) {
+                    await server.editRole(roleId, newAttributes);
+                }
+            }
+            setAllEdits({});
+        } catch (err) {
+            console.error("Failed while performing save updates:", err);
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    const globalHasChanges = useMemo(() => {
+        return Object.keys(allEdits).some((id) => {
+            const base = currentRoles.find((r) => r.id === id);
+            if (!base) return false;
+            return !isEqual(base, { ...base, ...allEdits[id] });
+        });
+    }, [allEdits, currentRoles]);
+
+    if (showReorderPanel) {
+        return (
+            <div>
+                <RoleReorderPanel
+                    server={server}
+                    onExit={() => setShowReorderPanel(false)}
+                />
+            </div>
+        );
+    }
+
     return (
         <div>
             <PermissionsLayout
@@ -312,40 +370,33 @@ export const Roles = observer(({ server }: Props) => {
                     const currentRole = currentRoles.find(
                         (x) => x.id === selected,
                     )!;
-
                     if (!currentRole) return null;
 
-                    const [value, setValue] = useState<Partial<RoleOrDefault>>(
-                        {},
-                    );
+                    const activeRoleEdits = allEdits[selected] ?? {};
+                    const currentRoleValue = {
+                        ...currentRole,
+                        ...activeRoleEdits,
+                    };
 
-                    const currentRoleValue = { ...currentRole, ...value };
-
-                    function save() {
-                        const { permissions: permsCurrent, ...current } =
-                            currentRole;
-                        const { permissions: permsValue, ...value } =
-                            currentRoleValue;
-
-                        if (!isEqual(permsCurrent, permsValue)) {
-                            server.setPermissions(
-                                selected,
-                                typeof permsValue === "number"
-                                    ? permsValue
-                                    : {
-                                          allow: permsValue.a,
-                                          deny: permsValue.d,
-                                      },
-                            );
-                        }
-
-                        if (!isEqual(current, value)) {
-                            server.editRole(selected, value);
-                        }
-                    }
+                    const updateActiveRoleFields = (
+                        fields: Partial<RoleOrDefault>,
+                    ) => {
+                        setAllEdits((prev) => ({
+                            ...prev,
+                            [selected]: {
+                                ...prev[selected],
+                                ...fields,
+                            },
+                        }));
+                    };
 
                     function deleteRole() {
                         server.deleteRole(selected);
+                        setAllEdits((prev) => {
+                            const updated = { ...prev };
+                            delete updated[selected];
+                            return updated;
+                        });
                     }
 
                     return (
@@ -364,11 +415,8 @@ export const Roles = observer(({ server }: Props) => {
                                 </ReorderButton>
                                 <Button
                                     palette="secondary"
-                                    disabled={isEqual(
-                                        currentRole,
-                                        currentRoleValue,
-                                    )}
-                                    onClick={save}>
+                                    disabled={!globalHasChanges || isSaving}
+                                    onClick={saveAllChanges}>
                                     <Text id="app.special.modals.actions.save" />
                                 </Button>
                             </SpaceBetween>
@@ -383,8 +431,7 @@ export const Roles = observer(({ server }: Props) => {
                                             <InputBox
                                                 value={currentRoleValue.name}
                                                 onChange={(e) =>
-                                                    setValue({
-                                                        ...value,
+                                                    updateActiveRoleFields({
                                                         name: e.currentTarget
                                                             .value,
                                                     })
@@ -396,10 +443,7 @@ export const Roles = observer(({ server }: Props) => {
                                     <section>
                                         <Category>{"Role ID"}</Category>
                                         <RoleId>
-                                            <Tooltip
-                                                content={
-                                                    "This is a unique identifier for this role."
-                                                }>
+                                            <Tooltip content="This is a unique identifier for this role.">
                                                 <HelpCircle size={16} />
                                             </Tooltip>
                                             <Tooltip
@@ -428,8 +472,7 @@ export const Roles = observer(({ server }: Props) => {
                                                     "gray"
                                                 }
                                                 onChange={(colour) =>
-                                                    setValue({
-                                                        ...value,
+                                                    updateActiveRoleFields({
                                                         colour,
                                                     })
                                                 }
@@ -447,8 +490,7 @@ export const Roles = observer(({ server }: Props) => {
                                                     false
                                                 }
                                                 onChange={(hoist) =>
-                                                    setValue({
-                                                        ...value,
+                                                    updateActiveRoleFields({
                                                         hoist,
                                                     })
                                                 }
@@ -469,10 +511,7 @@ export const Roles = observer(({ server }: Props) => {
                             <PermissionList
                                 value={currentRoleValue.permissions}
                                 onChange={(permissions) =>
-                                    setValue({
-                                        ...value,
-                                        permissions,
-                                    } as RoleOrDefault)
+                                    updateActiveRoleFields({ permissions })
                                 }
                                 target={server}
                             />
