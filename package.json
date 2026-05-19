@@ -7,7 +7,7 @@
         "build": "yarn && rimraf build && node scripts/setup_assets.js --check && yarn build:deps && vite build",
         "build:highmem": "NODE_OPTIONS='--max-old-space-size=4096' yarn build",
         "preview": "vite preview",
-        "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
+        "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
         "fmt": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
         "typecheck": "tsc --noEmit",
         "start": "sirv dist --cors --single --host",
