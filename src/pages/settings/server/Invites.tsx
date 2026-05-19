@@ -1,18 +1,19 @@
-import { Trash, Copy } from "@styled-icons/boxicons-regular";
+/* eslint-disable react/jsx-no-literals */
+import { Copy, Trash } from "@styled-icons/boxicons-regular";
 import { observer } from "mobx-react-lite";
 import { Virtuoso } from "react-virtuoso";
 import { API, Server } from "revolt.js";
 
 import styles from "./Panes.module.scss";
 import { Text } from "preact-i18n";
-import { useEffect, useState, useMemo } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 
-import { IconButton, Preloader, InputBox } from "@revoltchat/ui";
+import { IconButton, InputBox, Preloader } from "@revoltchat/ui";
 
 import { normalize } from "../../../components/common/Reuseables";
-import UserIcon from "../../../components/common/user/UserIcon";
 import UserShort from "../../../components/common/user/UserShort";
 import { ChannelName } from "../../../controllers/client/jsx/ChannelName";
+import { modalController } from "../../../controllers/modals/ModalController";
 
 interface InnerProps {
     invite: API.Invite;
@@ -88,19 +89,55 @@ export const Invites = observer(({ server }: Props) => {
             return (
                 normalize(invite._id).includes(q) ||
                 (user && normalize(user.username).includes(q)) ||
-                (channel && normalize(channel.name).includes(q))
+                (channel && channel.name && normalize(channel.name).includes(q))
             );
         });
     }, [invites, search, server.client.users, server.client.channels]);
 
     return (
         <div className={styles.userList}>
-            <div style={{ padding: "0 0 16px 0" }}>
-                <InputBox
-                    placeholder="Search invites..."
-                    value={search}
-                    onInput={(e) => setSearch(e.currentTarget.value)}
-                />
+            <div
+                style={{
+                    padding: "0 0 16px 0",
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "center",
+                }}>
+                <div style={{ flexGrow: 1 }}>
+                    <InputBox
+                        placeholder="Search invites..."
+                        value={search}
+                        onInput={(e) => setSearch(e.currentTarget.value)}
+                    />
+                </div>
+                <button
+                    onClick={() => {
+                        // @ts-expect-error this does fucking exist, stop telling me it doesn't.
+                        const targetChannel = server.defaultChannel;
+                        if (targetChannel) {
+                            modalController.push({
+                                type: "create_invite",
+                                target: targetChannel,
+                            });
+                        } else {
+                            console.error(
+                                "Could not find a valid target channel for this server's invite.",
+                            );
+                        }
+                    }}
+                    style={{
+                        padding: "0 16px",
+                        height: "38px",
+                        backgroundColor: "var(--accent)",
+                        color: "var(--foreground)",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: 500,
+                        whiteSpace: "nowrap",
+                    }}>
+                    Create Invite
+                </button>
             </div>
 
             <div className={styles.subtitle}>
