@@ -2,15 +2,14 @@ import {
     At,
     Bell,
     BellOff,
+    Block,
     Check,
     CheckSquare,
-    Block,
-    Square,
     LeftArrowAlt,
+    Square,
 } from "@styled-icons/boxicons-regular";
 import { observer } from "mobx-react-lite";
-import { Channel } from "revolt.js";
-import { Server } from "revolt.js";
+import { Channel, Server } from "revolt.js";
 
 import { ContextMenuWithData, MenuItem } from "preact-context-menu";
 import { Text } from "preact-i18n";

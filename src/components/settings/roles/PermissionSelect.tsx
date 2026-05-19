@@ -1,7 +1,6 @@
 import { Lock } from "@styled-icons/boxicons-solid";
 import Long from "long";
-import { API, Channel, Member, Server } from "revolt.js";
-import { Permission } from "revolt.js";
+import { API, Channel, Permission, Server } from "revolt.js";
 import styled, { css } from "styled-components";
 
 import { Text } from "preact-i18n";

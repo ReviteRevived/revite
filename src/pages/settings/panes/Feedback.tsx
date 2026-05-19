@@ -1,11 +1,9 @@
-import { Github } from "@styled-icons/boxicons-logos";
-import { BugAlt, Group, ListOl } from "@styled-icons/boxicons-regular";
-import { Link } from "react-router-dom";
+import { BugAlt, ListOl } from "@styled-icons/boxicons-regular";
 
 import styles from "./Panes.module.scss";
 import { Text } from "preact-i18n";
 
-import { CategoryButton, Column, Tip } from "@revoltchat/ui";
+import { CategoryButton, Column } from "@revoltchat/ui";
 
 export function Feedback() {
     return (

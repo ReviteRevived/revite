@@ -1,13 +1,13 @@
-import { Chrome, Android, Windows } from "@styled-icons/boxicons-logos";
-import { HelpCircle, Desktop, LogOut } from "@styled-icons/boxicons-regular";
+import { Android, Chrome, Windows } from "@styled-icons/boxicons-logos";
+import { Desktop, HelpCircle, LogOut } from "@styled-icons/boxicons-regular";
 import {
-    Safari,
     Firefoxbrowser,
-    Microsoftedge,
+    Ios,
     Linux,
     Macos,
-    Ios,
+    Microsoftedge,
     Opera,
+    Safari,
     Samsung,
     Windowsxp,
 } from "@styled-icons/simple-icons";

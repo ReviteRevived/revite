@@ -79,7 +79,7 @@ export function PinnedMessages({ close }: Props) {
                             error={<a onClick={close}>« back to members</a>}
                         />
                     </Category>
-                    <Category></Category>
+                    <Category />
 
                     {loading && <Preloader type="ring" />}
 

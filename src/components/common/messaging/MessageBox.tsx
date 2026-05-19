@@ -619,8 +619,8 @@ export default observer(({ channel }: Props) => {
                             const v = state.draft.get(channel._id);
                             const cnt: DraftObject = {
                                 content:
-                                    (v?.content ? `${v.content} ` : "") +
-                                    `:${emoji}:`,
+                                    `${v?.content ? `${v.content} ` : "" 
+                                    }:${emoji}:`,
                             };
                             state.draft.set(channel._id, cnt);
                         }}

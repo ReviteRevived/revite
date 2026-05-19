@@ -2,13 +2,13 @@
 import { autorun } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
-import { Channel, Server, User, API } from "revolt.js";
+import { API, Channel, Server, User } from "revolt.js";
 
-import { useEffect, useLayoutEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import {
-    useSession,
     useClient,
+    useSession,
 } from "../../../controllers/client/ClientController";
 import { GenericSidebarBase } from "../SidebarBase";
 import MemberList, { MemberListGroup } from "./MemberList";

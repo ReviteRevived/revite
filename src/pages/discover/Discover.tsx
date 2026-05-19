@@ -58,7 +58,7 @@ const ThemeSkeleton = () => (
     </div>
 );
 
-export default observer(function Discover() {
+export default observer(() => {
     const history = useHistory();
     const client = useClient();
     const themeStore = useApplicationState().settings.theme;

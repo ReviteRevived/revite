@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { User, API } from "revolt.js";
+import { User } from "revolt.js";
 
 import { Text } from "preact-i18n";
 

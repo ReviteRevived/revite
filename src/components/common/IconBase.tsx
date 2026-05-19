@@ -1,5 +1,4 @@
-import { API } from "revolt.js";
-import { Nullable } from "revolt.js";
+import { API, Nullable } from "revolt.js";
 import styled, { css } from "styled-components/macro";
 
 import { Ref } from "preact";

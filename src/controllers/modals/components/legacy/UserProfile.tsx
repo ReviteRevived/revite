@@ -1,23 +1,23 @@
 import { ListUl } from "@styled-icons/boxicons-regular";
 import {
-    Envelope,
-    Edit,
-    UserPlus,
     CalendarAlt,
-    UserX,
+    ChevronDown,
+    Edit,
+    Envelope,
+    Flag,
     Group,
     InfoCircle,
-    Flag,
-    ChevronDown,
+    UserPlus,
+    UserX,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { Link, useHistory } from "react-router-dom";
-import { UserPermission, API } from "revolt.js";
+import { API, UserPermission } from "revolt.js";
 import { decodeTime } from "ulid";
 
 import styles from "./UserProfile.module.scss";
 import { Localizer, Text } from "preact-i18n";
-import { useEffect, useLayoutEffect, useState, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useState } from "preact/hooks";
 
 import {
     Button,
@@ -195,9 +195,7 @@ export const UserProfile = observer(
                                     className={styles.username}
                                     onClick={() =>
                                         modalController.writeText(
-                                            user.username +
-                                                "#" +
-                                                user.discriminator,
+                                            `${user.username}#${user.discriminator}`,
                                         )
                                     }>
                                     <Localizer>

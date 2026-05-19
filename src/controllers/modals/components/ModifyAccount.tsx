@@ -144,7 +144,7 @@ export default function ModifyAccount({
                             }}>
                             <InputBox
                                 disabled
-                                value={"#" + client.user.discriminator}
+                                value={`#${  client.user.discriminator}`}
                             />
                         </div>
                     </div>

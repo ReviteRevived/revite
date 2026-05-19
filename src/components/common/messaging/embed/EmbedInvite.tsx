@@ -1,10 +1,10 @@
 import { Group } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { useHistory } from "react-router-dom";
-import { Message, API } from "revolt.js";
+import { API, Message } from "revolt.js";
 import styled, { css } from "styled-components/macro";
 
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import { Button, Category, Preloader } from "@revoltchat/ui";
 
@@ -13,10 +13,7 @@ import { isTouchscreenDevice } from "../../../../lib/isTouchscreenDevice";
 import { I18nError } from "../../../../context/Locale";
 
 import ServerIcon from "../../../../components/common/ServerIcon";
-import {
-    useClient,
-    useSession,
-} from "../../../../controllers/client/ClientController";
+import { useSession } from "../../../../controllers/client/ClientController";
 import { takeError } from "../../../../controllers/client/jsx/error";
 
 const EmbedInviteBase = styled.div`

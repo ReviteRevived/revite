@@ -39,9 +39,9 @@ export default observer(() => {
                 [
                     [
                         "username",
-                        client.user!.username +
-                            "#" +
-                            client.user!.discriminator,
+                        `${client.user!.username 
+                            }#${ 
+                            client.user!.discriminator}`,
                         At,
                     ],
                     ["email", email, Envelope],

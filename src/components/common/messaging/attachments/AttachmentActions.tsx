@@ -1,7 +1,7 @@
 import {
-    LinkExternal,
-    Headphone,
     Download,
+    Headphone,
+    LinkExternal,
 } from "@styled-icons/boxicons-regular";
 import { File, Video } from "@styled-icons/boxicons-solid";
 import { isFirefox } from "react-device-detect";
@@ -9,7 +9,6 @@ import { API } from "revolt.js";
 
 import styles from "./AttachmentActions.module.scss";
 import classNames from "classnames";
-import { useContext } from "preact/hooks";
 
 import { IconButton } from "@revoltchat/ui";
 
