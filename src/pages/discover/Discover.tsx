@@ -1,24 +1,37 @@
+/* eslint-disable no-unused-vars */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable react/jsx-no-literals */
 // This code, sucks. — It is also temporary just to add themes for now :)
 // If you want to improve it, feel free. I know I made many mistales
 // I'm superrrr sleep deprived tbh.
 // EDIT - 3/02/26
 // This code sucks even fucking more.
 import {
-    Compass,
-    Palette,
-    Server,
     Bot,
-    Search,
     CheckShield,
+    Compass,
     GridAlt,
     XCircle,
     LogOut,
+    Palette,
+    Search,
+    Server,
+    Rocket,
+    LogIn,
+    XCircle,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import styles from "./styles.module.scss";
+import { Text } from "preact-i18n";
+
+import { Modal } from "@revoltchat/ui";
 
 import { isTouchscreenDevice } from "../../lib/isTouchscreenDevice";
 
@@ -83,7 +96,11 @@ export default observer(() => {
     const [sortBy, setSortBy] = useState<
         "bumps" | "members" | "newest" | "activity"
     >("bumps");
-
+    const [alertModal, setAlertModal] = useState<{
+        title: string;
+        message: string;
+        palette?: "error" | "accent";
+    } | null>(null);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const touchStartX = useRef<number | null>(null);
 
@@ -377,7 +394,14 @@ export default observer(() => {
                         </div>
                         <button
                             className={styles.applyButton}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "6px",
+                            }}
                             onClick={() => handleApply(t)}>
+                            <Palette size={16} />
                             Apply
                         </button>
                     </div>
@@ -514,25 +538,90 @@ export default observer(() => {
                 <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
                     <button
                         className={styles.applyButton}
-                        style={{ flex: 1 }}
-                        onClick={() => handleJoin(s.server_id, s.invite_link)}>
-                        Join
-                    </button>
-                    <div
                         style={{
-                            padding: "0 10px",
-                            borderRadius: "8px",
-                            background: "var(--secondary-background)",
+                            flex: 1,
                             display: "flex",
                             alignItems: "center",
-                            fontSize: "0.7rem",
-                            fontWeight: "bold",
-                            border: "1px dashed var(--accent)",
-                            opacity: 0.7,
+                            justifyContent: "center",
+                            gap: "6px",
                         }}
-                        title="Activity tracking coming soon!">
-                        Activity: WIP
-                    </div>
+                        onClick={() => handleJoin(s.server_id, s.invite_link)}>
+                        <LogIn size={16} />
+                        {client.servers.has(s.server_id) ? "Visit" : "Join"}
+                    </button>
+                    <button
+                        className={styles.applyButton}
+                        style={{
+                            padding: "0 14px",
+                            background: "transparent",
+                            color: "var(--accent)",
+                            border: "1px solid var(--accent)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                        }}
+                        onClick={async () => {
+                            if (!client.servers.has(s.server_id)) {
+                                setAlertModal({
+                                    title: "Access Denied",
+                                    message:
+                                        "You must be a member of this server to bump it.",
+                                    palette: "error",
+                                });
+                                return;
+                            }
+
+                            try {
+                                const response = await fetch(
+                                    `${DISCOVERY_API_URL}/servers/${s.server_id}/bump`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "x-api-key": import.meta.env
+                                                .VITE_DISCOVERY_KEY,
+                                        },
+                                    },
+                                );
+                                const data = await response.json();
+                                if (response.ok) {
+                                    setAlertModal({
+                                        title: "Server Bumped!",
+                                        message: data.message,
+                                        palette: "accent",
+                                    });
+                                    setServers((prev) =>
+                                        prev.map((srv) =>
+                                            srv.server_id === s.server_id
+                                                ? {
+                                                      ...srv,
+                                                      last_bumped:
+                                                          new Date().toISOString(),
+                                                  }
+                                                : srv,
+                                        ),
+                                    );
+                                } else {
+                                    setAlertModal({
+                                        title: "Slow Down",
+                                        message: data.error,
+                                        palette: "error",
+                                    });
+                                }
+                            } catch (e) {
+                                setAlertModal({
+                                    title: "Connection Error",
+                                    message:
+                                        "Failed to connect to the discovery API. Please try again later.",
+                                    palette: "error",
+                                });
+                            }
+                        }}
+                        title="Bump this server to the top!">
+                        <Rocket size={16} />
+                        Bump
+                    </button>
                 </div>
             </div>
         </div>
@@ -543,7 +632,9 @@ export default observer(() => {
             className={`${styles.discoverLayout} ${
                 isTouchscreenDevice ? styles.touchscreen : ""
             }`} // Everyone should use a PC, so I don't have to worry about this.
+            // @ts-expect-error fucking cope?
             onTouchStart={handleTouchStart}
+            // @ts-expect-error fucking cope?
             onTouchEnd={handleTouchEnd}>
             {isSidebarOpen && isTouchscreenDevice && (
                 <div
@@ -653,6 +744,28 @@ export default observer(() => {
                         : filteredServers.map(renderServerCard)}
                 </div>
             </div>
+            {alertModal && (
+                <Modal
+                    title={alertModal.title}
+                    onClose={() => setAlertModal(null)}
+                    actions={[
+                        {
+                            children: (
+                                <Text id="app.special.modals.actions.close" />
+                            ),
+                            palette:
+                                alertModal.palette === "error"
+                                    ? "error"
+                                    : "accent",
+                            onClick: () => {
+                                setAlertModal(null);
+                                return true;
+                            },
+                        },
+                    ]}>
+                    <p>{alertModal.message}</p>
+                </Modal>
+            )}
         </div>
     );
 });
