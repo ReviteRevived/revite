@@ -15,7 +15,6 @@ import {
     CheckShield,
     Compass,
     GridAlt,
-    XCircle,
     LogOut,
     Palette,
     Search,
