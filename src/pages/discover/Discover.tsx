@@ -12,7 +12,7 @@
 // This code sucks even fucking more.
 import {
     Bot,
-    CheckShield,
+    CheckCircle,
     Compass,
     GridAlt,
     LogOut,
@@ -374,7 +374,7 @@ export default observer(() => {
                             </span>
                         )}
                         {isOfficial && (
-                            <CheckShield
+                            <CheckCircle
                                 size={14}
                                 className={styles.officialIcon}
                                 style={{ color: vars["accent"] || "#fd6671" }}
@@ -448,12 +448,6 @@ export default observer(() => {
                     </span>
                 </div>
                 <div className={styles.badgeOverlay}>
-                    {s.is_verified === 1 && (
-                        <CheckShield
-                            size={16}
-                            style={{ color: "#43b581", marginRight: "4px" }}
-                        />
-                    )}
                     <span className={styles.versionBadge}>
                         {s.members?.toLocaleString() || 0} Members
                     </span>
@@ -497,16 +491,30 @@ export default observer(() => {
                     <div
                         className={styles.themeInfo}
                         style={{ flex: 1, overflow: "hidden" }}>
-                        <h3
+                        <div
                             style={{
-                                margin: 0,
-                                fontSize: "0.95rem",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
                             }}>
-                            {s.server_name}
-                        </h3>
+                            <h3
+                                style={{
+                                    margin: 0,
+                                    fontSize: "0.95rem",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    flexShrink: 1,
+                                }}>
+                                {s.server_name}
+                            </h3>
+                            {s.is_verified === 1 && (
+                                <CheckCircle
+                                    size={16}
+                                    style={{ color: "#43b581", flexShrink: 0 }}
+                                />
+                            )}
+                        </div>
                         <p
                             style={{
                                 margin: 0,
