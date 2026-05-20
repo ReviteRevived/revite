@@ -15,3 +15,4 @@ public/assets_*
 !public/assets_default
 
 .vscode/chrome_data
+.env
