@@ -1,8 +1,14 @@
 import { action, computed, makeAutoObservable, ObservableMap } from "mobx";
 
+
+
 import { mapToRecord } from "../../lib/conversion";
 
+
+
 import { Fonts, MonospaceFonts, Overrides } from "../../context/Theme";
+
+
 
 import { EmojiPack, setGlobalEmojiPack } from "../../components/common/Emoji";
 import Persistent from "../interfaces/Persistent";
@@ -11,6 +17,7 @@ import Syncable from "../interfaces/Syncable";
 import SAudio, { SoundOptions } from "./helpers/SAudio";
 import SSecurity from "./helpers/SSecurity";
 import STheme from "./helpers/STheme";
+
 
 export interface ISettings {
     "notifications:desktop": boolean;
@@ -23,6 +30,7 @@ export interface ISettings {
     "appearance:show_send_button": boolean;
     "appearance:show_account_age": boolean;
     "appearance:show_blocked": boolean;
+    "appearance:show_original_status": boolean;
     "appearance:mutual_dropdown": boolean;
 
     "appearance:twelvehour": boolean;

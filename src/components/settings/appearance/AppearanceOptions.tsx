@@ -12,6 +12,12 @@ const APPEARANCE_SETTINGS = [
         desc: "Toggle whether messages from blocked users are visible.",
     },
     {
+        key: "appearance:show_original_status",
+        default: false,
+        label: "Show Original Status",
+        desc: "Show original Revite status indicators",
+    },
+    {
         key: "appearance:show_account_age",
         default: false,
         id: "show_account_age",

@@ -1,7 +1,14 @@
-import { VolumeMute, MicrophoneOff } from "@styled-icons/boxicons-solid";
+import {
+    Circle,
+    Ghost,
+    MicrophoneOff,
+    Moon,
+    NoEntry,
+    VolumeMute,
+} from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { useParams } from "react-router-dom";
-import { User, API } from "revolt.js";
+import { API, User } from "revolt.js";
 import styled, { css } from "styled-components/macro";
 
 import { useApplicationState } from "../../../mobx/State";
@@ -59,6 +66,7 @@ export default observer(
             >,
     ) => {
         const client = useClient();
+        const settings = useApplicationState().settings;
 
         const {
             target,
@@ -104,6 +112,15 @@ export default observer(
                 ) ?? (target ? target.defaultAvatarURL : fallback);
         }
 
+        const showOriginalStatus =
+            settings.get("appearance:show_original_status") ?? false;
+        const presence =
+            target?.online && target?.status?.presence !== "Invisible"
+                ? target?.status?.presence ?? "Online"
+                : "Invisible";
+
+        const statusColor = useStatusColour(target);
+
         return (
             <IconBase
                 {...svgProps}
@@ -123,14 +140,46 @@ export default observer(
                     mask={mask ?? (status ? "url(#user)" : undefined)}>
                     {<img src={url} draggable={false} loading="lazy" />}
                 </foreignObject>
-                {props.status && (
-                    <circle
-                        cx="27"
-                        cy="27"
-                        r="5"
-                        fill={useStatusColour(target)}
-                    />
-                )}
+                {props.status &&
+                    (showOriginalStatus ? (
+                        <circle cx="27" cy="27" r="5" fill={statusColor} />
+                    ) : (
+                        <foreignObject
+                            x="21"
+                            y="21"
+                            width="12"
+                            height="12"
+                            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="12"
+                                height="12"
+                                style={{
+                                    color: statusColor,
+                                    display: "block",
+                                }}>
+                                {presence === "Idle" && (
+                                    <Moon size={24} fill="currentColor" />
+                                )}
+                                {presence === "Busy" && (
+                                    <NoEntry size={24} fill="currentColor" />
+                                )}
+                                {presence === "Focus" && (
+                                    <NoEntry size={24} fill="currentColor" />
+                                )}
+                                {presence === "Online" && (
+                                    <Circle size={24} fill="currentColor" />
+                                )}
+                                {presence === "Invisible" && (
+                                    <Ghost
+                                        size={24}
+                                        fill="currentColor"
+                                        style={{ opacity: 0.5 }}
+                                    />
+                                )}
+                            </svg>
+                        </foreignObject>
+                    ))}
                 {props.voice && (
                     <foreignObject x="22" y="22" width="10" height="10">
                         <VoiceIndicator status={props.voice}>
