@@ -591,11 +591,20 @@ export default observer(() => {
                                         },
                                     },
                                 );
-                                const data = await response.json();
+
+                                const rawResponse = await response.text();
+                                let data: any = {};
+
+                                try {
+                                    data = JSON.parse(rawResponse);
+                                } catch {
+                                    data = { error: rawResponse };
+                                }
+
                                 if (response.ok) {
                                     setAlertModal({
                                         title: "Server Bumped!",
-                                        message: data.message,
+                                        message: data.message || "Success",
                                         palette: "accent",
                                     });
                                     setServers((prev) =>
@@ -612,7 +621,9 @@ export default observer(() => {
                                 } else {
                                     setAlertModal({
                                         title: "Slow Down",
-                                        message: data.error,
+                                        message:
+                                            data.error ||
+                                            "You are doing that too fast.",
                                         palette: "error",
                                     });
                                 }
