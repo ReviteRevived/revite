@@ -1,4 +1,4 @@
-import { Plus, X } from "@styled-icons/boxicons-regular";
+import { Plus, X, Folder } from "@styled-icons/boxicons-regular";
 import { observer } from "mobx-react-lite";
 import { DragDropContext } from "react-beautiful-dnd";
 import { API, Channel, Server } from "revolt.js";
@@ -13,6 +13,8 @@ import { SaveStatus } from "@revoltchat/ui";
 import { useAutosave } from "../../../lib/debounce";
 import { Draggable, Droppable } from "../../../lib/dnd";
 import { noop } from "../../../lib/js";
+
+import { useApplicationState } from "../../../mobx/State";
 
 import ChannelIcon from "../../../components/common/ChannelIcon";
 import { modalController } from "../../../controllers/modals/ModalController";
@@ -45,21 +47,26 @@ const KanbanEntry = styled.div`
     }
 `;
 
-const KanbanList = styled.div<{ last: boolean }>`
+const KanbanList = styled.div<{ last: boolean; vertical?: boolean }>`
     ${(props) =>
         !props.last &&
-        css`
-            padding-inline-end: 4px;
-        `}
+        (props.vertical
+            ? css`
+                  margin-bottom: 12px;
+              `
+            : css`
+                  padding-inline-end: 4px;
+              `)}
 
     > .inner {
-        width: 180px;
+        width: ${(props) => (props.vertical ? "100%" : "180px")};
         display: flex;
         flex-shrink: 0;
         overflow-y: auto;
         padding-bottom: 2px;
         flex-direction: column;
         background: var(--secondary-background);
+        border-radius: ${(props) => (props.vertical ? "4px" : "0px")};
 
         input {
             width: 100%;
@@ -109,9 +116,33 @@ const KanbanListHeader = styled.div<{
     }
 `;
 
-const KanbanBoard = styled.div`
+const AddCategoryAction = styled.button`
     display: flex;
-    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: calc(100% - 8px);
+    height: 36px;
+    margin: 4px;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--secondary-foreground);
+    font: var(--font);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--background);
+        color: var(--foreground);
+        border-color: var(--foreground);
+    }
+`;
+
+const KanbanBoard = styled.div<{ vertical?: boolean }>`
+    display: flex;
+    flex-direction: ${(props) => (props.vertical ? "column" : "row")};
 `;
 
 const FullSize = styled.div`
@@ -137,6 +168,11 @@ interface Props {
 }
 
 export const Categories = observer(({ server }: Props) => {
+    const settings = useApplicationState().settings;
+    const useVerticalLayout = settings.get(
+        "appearance:server_categories_vertical",
+    );
+
     const [status, setStatus] = useState<"saved" | "editing" | "saving">(
         "saved",
     );
@@ -237,19 +273,22 @@ export const Categories = observer(({ server }: Props) => {
                 <FullSize>
                     <Droppable
                         droppableId="categories"
-                        direction="horizontal"
+                        direction={
+                            useVerticalLayout ? "vertical" : "horizontal"
+                        }
                         type="column">
                         {(provided) => (
                             <div
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}>
-                                <KanbanBoard>
+                                <KanbanBoard vertical={useVerticalLayout}>
                                     <ListElement
                                         category={defaultCategory}
                                         server={server}
                                         index={0}
                                         addChannel={noop}
                                         draggable={false}
+                                        vertical={useVerticalLayout}
                                     />
                                     {categories.map((category, index) => (
                                         <ListElement
@@ -258,6 +297,7 @@ export const Categories = observer(({ server }: Props) => {
                                             server={server}
                                             index={index + 1}
                                             key={category.id}
+                                            vertical={useVerticalLayout}
                                             setTitle={(title) => {
                                                 setCategories(
                                                     categories.map((x) =>
@@ -296,9 +336,11 @@ export const Categories = observer(({ server }: Props) => {
                                             }}
                                         />
                                     ))}
-                                    <KanbanList last>
+                                    <KanbanList
+                                        last
+                                        vertical={useVerticalLayout}>
                                         <div className="inner">
-                                            <KanbanListHeader
+                                            <AddCategoryAction
                                                 onClick={() =>
                                                     setCategories([
                                                         ...categories,
@@ -309,8 +351,9 @@ export const Categories = observer(({ server }: Props) => {
                                                         },
                                                     ])
                                                 }>
-                                                <Plus size={24} />
-                                            </KanbanListHeader>
+                                                <Plus size={18} />
+                                                <Text id="app.context_menu.create_category" />
+                                            </AddCategoryAction>
                                         </div>
                                     </KanbanList>
                                     {provided.placeholder}
@@ -332,6 +375,7 @@ function ListElement({
     deleteSelf,
     addChannel,
     draggable,
+    vertical,
 }: {
     category: API.Category;
     server: Server;
@@ -340,6 +384,7 @@ function ListElement({
     deleteSelf?: () => void;
     addChannel: (channel: Channel) => void;
     draggable?: boolean;
+    vertical?: boolean;
 }) {
     const [editing, setEditing] = useState<string>();
     const startEditing = () => {
@@ -376,7 +421,10 @@ function ListElement({
             index={index}>
             {(provided) => (
                 <div {...provided.draggableProps} ref={provided.innerRef}>
-                    <KanbanList last={false} key={category.id}>
+                    <KanbanList
+                        last={false}
+                        key={category.id}
+                        vertical={vertical}>
                         <div className="inner">
                             <Row>
                                 <KanbanListHeader
@@ -385,22 +433,40 @@ function ListElement({
                                         : {})}
                                     renamable={draggable}
                                     onClick={startEditing}>
-                                    {editing !== undefined ? (
-                                        <input
-                                            value={editing}
-                                            onChange={(e) =>
-                                                setEditing(
-                                                    e.currentTarget.value,
-                                                )
-                                            }
-                                            onKeyDown={(e) =>
-                                                e.key === "Enter" && save()
-                                            }
-                                            id={category.id}
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "6px",
+                                            width: "100%",
+                                            padding: "0 8px",
+                                        }}>
+                                        <Folder
+                                            size={18}
+                                            style={{
+                                                flexShrink: 0,
+                                                color: "var(--secondary-foreground)",
+                                            }}
                                         />
-                                    ) : (
-                                        <span>{category.title}</span>
-                                    )}
+
+                                        {editing !== undefined ? (
+                                            <input
+                                                value={editing}
+                                                onChange={(e) =>
+                                                    setEditing(
+                                                        e.currentTarget.value,
+                                                    )
+                                                }
+                                                onKeyDown={(e) =>
+                                                    e.key === "Enter" && save()
+                                                }
+                                                id={category.id}
+                                                style={{ textAlign: "left" }}
+                                            />
+                                        ) : (
+                                            <span>{category.title}</span>
+                                        )}
+                                    </div>
                                 </KanbanListHeader>
                                 {deleteSelf && (
                                     <KanbanListHeader onClick={deleteSelf}>

@@ -18,6 +18,12 @@ const APPEARANCE_SETTINGS = [
         desc: "Show original Revite status indicators",
     },
     {
+        key: "appearance:server_categories_vertical",
+        default: true,
+        label: "Categories Vertical",
+        desc: 'Makes the "Categories" tab vertical',
+    },
+    {
         key: "appearance:show_account_age",
         default: false,
         id: "show_account_age",
