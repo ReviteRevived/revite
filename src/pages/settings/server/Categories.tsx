@@ -59,7 +59,10 @@ const KanbanList = styled.div<{ last: boolean; vertical?: boolean }>`
               `)}
 
     > .inner {
-        width: ${(props) => (props.vertical ? "100%" : "180px")};
+        width: ${(props) => (props.vertical ? "100%" : "max-content")};
+        min-width: ${(props) => (props.vertical ? "auto" : "180px")};
+        max-width: ${(props) => (props.vertical ? "100%" : "260px")};
+
         display: flex;
         flex-shrink: 0;
         overflow-y: auto;
@@ -108,6 +111,12 @@ const KanbanListHeader = styled.div<{
 
     > * {
         font: var(--font);
+    }
+
+    span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     &:hover {
