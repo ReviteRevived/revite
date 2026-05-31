@@ -9,6 +9,7 @@ import ErrorBoundary from "../lib/ErrorBoundary";
 import Context from "../context";
 
 import { CheckAuth } from "../controllers/client/jsx/CheckAuth";
+import { RpcInitializer } from "./RpcInitializer";
 import Invite from "./invite/Invite";
 
 const Login = lazy(() => import("./login/Login"));
@@ -24,6 +25,7 @@ export function App() {
     return (
         <ErrorBoundary section="client">
             <Context>
+                <RpcInitializer />
                 <Masks />
                 <Switch>
                     <Route path="/login/verify/:token">
