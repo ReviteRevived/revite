@@ -1,24 +1,25 @@
 import { Github } from "@styled-icons/boxicons-logos";
 import {
-    Sync as SyncIcon,
-    Globe,
-    LogOut,
     Desktop,
+    Globe,
     ListUl,
+    LogOut,
+    Sync as SyncIcon,
 } from "@styled-icons/boxicons-regular";
 import {
     Bell,
-    Palette,
-    Coffee,
-    IdCard,
-    CheckShield,
-    Flask,
-    User,
-    Megaphone,
-    Speaker,
-    Plug,
     Bot,
+    CheckShield,
+    Coffee,
+    Flask,
+    IdCard,
+    Joystick,
+    Megaphone,
+    Palette,
+    Plug,
+    Speaker,
     Trash,
+    User,
 } from "@styled-icons/boxicons-solid";
 import { observer } from "mobx-react-lite";
 import { Route, Switch, useHistory } from "react-router-dom";
@@ -34,12 +35,11 @@ import { LineDivider } from "@revoltchat/ui";
 import { useApplicationState } from "../../mobx/State";
 
 import UserIcon from "../../components/common/user/UserIcon";
-import { Username } from "../../components/common/user/UserShort";
 import UserStatus from "../../components/common/user/UserStatus";
 import ButtonItem from "../../components/navigation/items/ButtonItem";
 import {
-    useClient,
     clientController,
+    useClient,
 } from "../../controllers/client/ClientController";
 import RequiresOnline from "../../controllers/client/jsx/RequiresOnline";
 import { modalController } from "../../controllers/modals/ModalController";
@@ -57,6 +57,7 @@ import { Native } from "./panes/Native";
 import { Notifications } from "./panes/Notifications";
 import { PluginsPage } from "./panes/Plugins";
 import { Profile } from "./panes/Profile";
+import { RpcSettings } from "./panes/RPC";
 import { Sessions } from "./panes/Sessions";
 import { Sync } from "./panes/Sync";
 
@@ -151,6 +152,11 @@ export default observer(() => {
                     title: <Text id="app.settings.pages.profile.title" />,
                 },
                 {
+                    id: "activity",
+                    icon: <Joystick size={20} />,
+                    title: "Activity",
+                },
+                {
                     id: "sessions",
                     icon: <CheckShield size={20} />,
                     title: <Text id="app.settings.pages.sessions.title" />,
@@ -217,6 +223,9 @@ export default observer(() => {
                 <Switch>
                     <Route path="/settings/profile">
                         <Profile />
+                    </Route>
+                    <Route path="/settings/activity">
+                        <RpcSettings />
                     </Route>
                     <Route path="/settings/sessions">
                         <RequiresOnline>
