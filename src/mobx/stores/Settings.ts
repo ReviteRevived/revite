@@ -38,6 +38,11 @@ export interface ISettings {
     "appearance:theme:css": string;
 
     "security:trustedOrigins": string[];
+
+    "rpc:lastfm_api_key": string;
+    "rpc:lastfm_username": string;
+    "rpc:discord_user_id": string;
+    "rpc:priority": string;
 }
 /**
  * Manages user settings.
@@ -134,7 +139,7 @@ export default class Settings
     }
 
     @action apply(
-        key: "appearance" | "theme",
+        key: "appearance" | "theme" | "rpc",
         data: unknown,
         _revision: number,
     ) {
@@ -142,7 +147,7 @@ export default class Settings
             this.remove("appearance:emoji");
             this.remove("appearance:seasonal");
             this.remove("appearance:transparency");
-        } else {
+        } else if (key === "theme") {
             this.remove("appearance:ligatures");
             this.remove("appearance:theme:base");
             this.remove("appearance:theme:css");
@@ -150,6 +155,11 @@ export default class Settings
             this.remove("appearance:theme:light");
             this.remove("appearance:theme:monoFont");
             this.remove("appearance:theme:overrides");
+        } else if (key === "rpc") {
+            this.remove("rpc:lastfm_api_key");
+            this.remove("rpc:lastfm_username");
+            this.remove("rpc:discord_user_id");
+            this.remove("rpc:priority");
         }
 
         this.hydrate(data as ISettings);
