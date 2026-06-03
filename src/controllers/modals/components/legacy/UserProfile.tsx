@@ -434,104 +434,6 @@ export const UserProfile = observer(
                     {tab === "profile" &&
                         (profile?.content || flags > 0 || user.bot ? (
                             <div>
-                                {flags & 1 ? (
-                                    /** ! FIXME: i18n this area */
-                                    <Category>
-                                        <Error error="User is suspended" />
-                                    </Category>
-                                ) : undefined}
-                                {flags & 2 ? (
-                                    <Category>
-                                        <Error error="User deleted their account" />
-                                    </Category>
-                                ) : undefined}
-                                {flags & 4 ? (
-                                    <Category>
-                                        <Error error="User is banned" />
-                                    </Category>
-                                ) : undefined}
-                                {user.bot ? (
-                                    <>
-                                        {/* FIXME: this too */}
-                                        <div className={styles.category}>
-                                            {"bot owner"}
-                                        </div>
-                                        <div
-                                            onClick={() =>
-                                                user.bot &&
-                                                modalController.push({
-                                                    type: "user_profile",
-                                                    user_id: user.bot.owner,
-                                                })
-                                            }
-                                            className={styles.entry}
-                                            key={user.bot.owner}>
-                                            <UserIcon
-                                                size={32}
-                                                target={client.users.get(
-                                                    user.bot.owner,
-                                                )}
-                                            />
-                                            <span>
-                                                <Username
-                                                    user={client.users.get(
-                                                        user.bot.owner,
-                                                    )}
-                                                />
-                                            </span>
-                                        </div>
-                                    </>
-                                ) : undefined}
-                                {member &&
-                                    member.roles &&
-                                    member.roles.length > 0 && (
-                                        <div className={styles.rolesSection}>
-                                            <div className={styles.category}>
-                                                Roles
-                                            </div>
-                                            <div className={styles.roleGrid}>
-                                                {(
-                                                    member.server
-                                                        ?.orderedRoles ?? []
-                                                )
-                                                    .filter((role) =>
-                                                        member.roles?.includes(
-                                                            role.id,
-                                                        ),
-                                                    )
-                                                    .map((role) => {
-                                                        const roleStyle = {
-                                                            background:
-                                                                role.colour ||
-                                                                "var(--secondary-foreground)",
-                                                        };
-
-                                                        return (
-                                                            <div
-                                                                key={role.id}
-                                                                className={
-                                                                    styles.rolePill
-                                                                }>
-                                                                <div
-                                                                    className={
-                                                                        styles.roleDot
-                                                                    }
-                                                                    style={
-                                                                        roleStyle
-                                                                    }
-                                                                />
-                                                                <span
-                                                                    className={
-                                                                        styles.roleName
-                                                                    }>
-                                                                    {role.name}
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                            </div>
-                                        </div>
-                                    )}
                                 <div className={styles.memberSince}>
                                     <div className={styles.category}>
                                         Member Since
@@ -598,6 +500,111 @@ export const UserProfile = observer(
                                             </div>
                                         )}
                                     </div>
+                                    {flags & 1 ? (
+                                        /** ! FIXME: i18n this area */
+                                        <Category>
+                                            <Error error="User is suspended" />
+                                        </Category>
+                                    ) : undefined}
+                                    {flags & 2 ? (
+                                        <Category>
+                                            <Error error="User deleted their account" />
+                                        </Category>
+                                    ) : undefined}
+                                    {flags & 4 ? (
+                                        <Category>
+                                            <Error error="User is banned" />
+                                        </Category>
+                                    ) : undefined}
+                                    {user.bot ? (
+                                        <>
+                                            {/* FIXME: this too */}
+                                            <div className={styles.category}>
+                                                {"bot owner"}
+                                            </div>
+                                            <div
+                                                onClick={() =>
+                                                    user.bot &&
+                                                    modalController.push({
+                                                        type: "user_profile",
+                                                        user_id: user.bot.owner,
+                                                    })
+                                                }
+                                                className={styles.entry}
+                                                key={user.bot.owner}>
+                                                <UserIcon
+                                                    size={32}
+                                                    target={client.users.get(
+                                                        user.bot.owner,
+                                                    )}
+                                                />
+                                                <span>
+                                                    <Username
+                                                        user={client.users.get(
+                                                            user.bot.owner,
+                                                        )}
+                                                    />
+                                                </span>
+                                            </div>
+                                        </>
+                                    ) : undefined}
+                                    {member &&
+                                        member.roles &&
+                                        member.roles.length > 0 && (
+                                            <div
+                                                className={styles.rolesSection}>
+                                                <div
+                                                    className={styles.category}>
+                                                    Roles
+                                                </div>
+                                                <div
+                                                    className={styles.roleGrid}>
+                                                    {(
+                                                        member.server
+                                                            ?.orderedRoles ?? []
+                                                    )
+                                                        .filter((role) =>
+                                                            member.roles?.includes(
+                                                                role.id,
+                                                            ),
+                                                        )
+                                                        .map((role) => {
+                                                            const roleStyle = {
+                                                                background:
+                                                                    role.colour ||
+                                                                    "var(--secondary-foreground)",
+                                                            };
+
+                                                            return (
+                                                                <div
+                                                                    key={
+                                                                        role.id
+                                                                    }
+                                                                    className={
+                                                                        styles.rolePill
+                                                                    }>
+                                                                    <div
+                                                                        className={
+                                                                            styles.roleDot
+                                                                        }
+                                                                        style={
+                                                                            roleStyle
+                                                                        }
+                                                                    />
+                                                                    <span
+                                                                        className={
+                                                                            styles.roleName
+                                                                        }>
+                                                                        {
+                                                                            role.name
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                                 {profile?.content && (
                                     <>
